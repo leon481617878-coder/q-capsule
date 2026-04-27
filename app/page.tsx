@@ -114,7 +114,7 @@ export default function QCapsuleDemo() {
   const [scheduleModal, setScheduleModal] = useState(false);
   const [flyingCapsule, setFlyingCapsule] = useState(null);
   const [toast, setToast] = useState(null);
-  const chatEndRef = useRef(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const [unreadCount, setUnreadCount] = useState(3);
 
   useEffect(() => {
