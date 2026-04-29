@@ -142,22 +142,20 @@ const MSGS: Record<number,Message[]> = {
   13:[
     {id:1,sender:"小美",content:"在吗在吗！下周末有空不",time:"10:00",self:false,date:"4月26日 周六"},
     {id:2,sender:"你",content:"在！干啥",time:"10:05",self:true},
-    {id:3,sender:"小美",content:"想组个出游，好久没出来玩了，你有空吗",time:"10:08",self:false},
+    {id:3,sender:"小美",content:"组个出游呀，叫上小红，我们三个好久没出来玩了",time:"10:08",self:false},
     {id:4,sender:"你",content:"好啊好啊，去哪？",time:"10:10",self:true},
-    {id:5,sender:"小美",content:"中山陵吧？你没去过吧",time:"10:12",self:false},
-    {id:6,sender:"你",content:"没去过，听说挺出片的，行！",time:"10:15",self:true},
-    {id:7,sender:"小美",content:"哈哈就知道你会答应！我查了下，地铁2号线中山陵站，走路约15分钟",time:"10:20",self:false},
-    {id:8,sender:"你",content:"那下午出发？几点合适",time:"10:22",self:true},
-    {id:9,sender:"小美",content:"建议1点出发，2点到景区，这样时间充裕还能赶上好光线",time:"10:25",self:false},
-    {id:10,sender:"你",content:"好，1点我去找你，一起坐地铁过去",time:"10:27",self:true},
-    {id:11,sender:"小美",content:"嗯嗯！记得提前在公众号实名预约哦，免费但需要预约",time:"10:30",self:false},
-    {id:12,sender:"你",content:"好的，我现在就预约，你的身份证号发我一下",time:"10:32",self:true},
-    {id:13,sender:"小美",content:"等下，我自己预约！你预约你自己的就行哈哈哈",time:"10:33",self:false},
-    {id:14,sender:"你",content:"哈哈哈好，那我先预约好",time:"10:34",self:true},
-    {id:15,sender:"小美",content:"周末出游定了吗？确认一下，就我们俩，周六下午",time:"11:30",self:false,date:"今天"},
-    {id:16,sender:"你",content:"确认！下午2点地铁中山陵站A口集合",time:"11:35",self:true},
-    {id:17,sender:"小美",content:"👍 中山陵下午2点见！穿舒服的鞋啊，台阶很多",time:"11:38",self:false},
-    {id:18,sender:"你",content:"收到，期待！",time:"11:40",self:true},
+    {id:5,sender:"小美",content:"中山陵吧，你没去过？",time:"10:12",self:false},
+    {id:6,sender:"你",content:"没去过！好啊",time:"10:15",self:true},
+    {id:7,sender:"小美",content:"小红说可以，你订好地铁时间发我",time:"10:30",self:false},
+    {id:8,sender:"小美",content:"地铁2号线中山陵站下，走路15分钟，建议2点前出发",time:"10:35",self:false},
+    {id:9,sender:"你",content:"那1点出发，2点到景区门口",time:"10:40",self:true},
+    {id:10,sender:"小美",content:"好！就这么定了，我跟小红说",time:"10:41",self:false},
+    {id:11,sender:"小美",content:"周末出游定了吗？我周六下午有空",time:"11:30",self:false,date:"今天"},
+    {id:12,sender:"小红",content:"我周六上午有课，下午可以",time:"11:32",self:false},
+    {id:13,sender:"你",content:"那就周六下午，中山陵",time:"11:33",self:true},
+    {id:14,sender:"你",content:"下午2点地铁站集合？",time:"11:37",self:true},
+    {id:15,sender:"小美",content:"👍 中山陵下午2点见",time:"11:38",self:false},
+    {id:16,sender:"小红",content:"好的",time:"11:38",self:false},
   ],
   14:[
     {id:1,sender:"班长 李同学",content:"兄弟，毕业旅行你报名了吗",time:"09:00",self:false,date:"4月24日 周四"},
@@ -520,25 +518,14 @@ export default function QCapsuleDemo(){
   // ── 多选 ─────────────────────────────────────────────────
   const toggleSelectMode=()=>{setSelectMode(p=>!p);setSelMsgIds(new Set());};
   const toggleMsgSel=(id:number)=>setSelMsgIds(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
-  const MULTI_CTX:Record<number,string>={
-    13:"这是我和朋友小美关于周末出游的私聊对话。请帮我：\n1.总结出游计划的确认情况（时间/地点/人员）\n2.梳理还需要准备的事项\n3.给出出行小建议",
-    20:"这是我和策划部同学关于活动方案设计的讨论。请帮我：\n1.总结已确认的方案核心要点\n2.梳理还未解决的问题\n3.给出下一步行动建议",
-    21:"这是我和室友之间发生矛盾争执的对话。请帮我：\n1.客观总结双方的核心诉求\n2.分析矛盾的直接原因和深层原因\n3.给出缓和关系的具体建议",
-    3: "这是我和师兄关于实验进展的私聊。请帮我：\n1.总结当前实验的关键问题\n2.梳理师兄给出的建议\n3.提炼下一步实验方向",
-    10:"这是我和队友关于比赛项目的沟通。请帮我：\n1.总结项目当前进展和分工\n2.梳理待解决的问题\n3.提醒即将到来的截止时间",
-    14:"这是我和班长的私聊对话。请帮我：\n1.总结班长提到的待办事项\n2.梳理需要我回应的内容\n3.给出行动建议",
-    15:"这是我和妈妈的对话。请帮我：\n1.总结家里的近况\n2.提炼妈妈的关心和嘱咐\n3.给我一个温暖的回复建议",
-  };
   const handleMultiAI=()=>{
     const msgs=(messages[activeChat]||[]).filter(m=>selMsgIds.has(m.id)&&!m.isSystem);
     if(!msgs.length)return;
-    const content=msgs.map(m=>`[${m.self?"我":m.sender}]: ${m.content}`).join("\n");
-    const ctx=MULTI_CTX[activeChat]||"请帮我：\n1.提炼核心信息 2.是否有待办事项 3.建议行动";
-    const q=`【选中了 ${msgs.length} 条消息，请基于以下上下文分析】\n\n${ctx}\n\n---\n选中的消息内容：\n${content.slice(0,700)}`;
+    const content=msgs.map(m=>`[${m.sender}]: ${m.content}`).join("\n");
+    const q=`请帮我总结以下选中的 ${msgs.length} 条消息：\n\n${content.slice(0,600)}\n\n提炼：1.核心观点/信息 2.是否有待办事项 3.建议行动`;
     setSelectMode(false);setSelMsgIds(new Set());
     openAI(activeChat,q);setRightTab("schedule");
   };
-
 
   // ── 右键菜单 ────────────────────────────────────────────
   const handleCM=(e:React.MouseEvent,msg:Message,cid:number)=>{e.preventDefault();e.stopPropagation();setCtxMenu({x:e.clientX,y:e.clientY,msg,cid});};
@@ -886,33 +873,22 @@ export default function QCapsuleDemo(){
               <div ref={aiEndRef}/>
             </div>
 
-            {(
+            {aiMessages.length<=1&&!aiLoading&&(
               <div style={{padding:"8px 14px",borderTop:"1px solid #F0F0F0",flexShrink:0}}>
-                <div style={{fontSize:10.5,color:"#999",marginBottom:7}}>
-                  {aiMessages.length<=1?"快速提问":"继续追问"}
-                </div>
+                <div style={{fontSize:10.5,color:"#999",marginBottom:7}}>快速提问</div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {(
-                    aiChatId===13?["出游路线怎么安排🗺️","需要提前预约吗🎫","附近有什么好吃的🍜","拍照技巧推荐📷"]:
-                    aiChatId===20?["互动游戏规则怎么设计🎮","经费分配合理吗💰","宣传物料准备什么📢","主持人怎么选"]:
-                    aiChatId===21?["谁的做法正确⚖️","如何化解这次冲突🤝","怎么建立宿舍规则📋","我需要道歉吗💬"]:
-                    aiChatId===3? ["曝光量参数怎么调⚗️","下次组会准备什么📊","彩色样品进度评估","横向周期偏差原因"]:
-                    aiChatId===10?["PPT哪里还需要改进📋","商业模式怎么写💡","还有哪些DDL⏰","答辩要注意什么"]:
-                    aiChatId===14?["待办事项清单📝","团建需要准备什么🏔️","班费怎么转账💳","班会注意事项"]:
-                    aiChatId===15?["帮我想一句感谢妈妈的话💝","假期回家需要准备什么","妈妈关心的事情汇总","如何回复让她放心"]:
-                    aiChatId===18?["最佳团建时间📅","团建活动内容建议🎉","预算大概多少💰","地点怎么选📍"]:
-                    aiChatId===19?["最佳例会时间推荐📋","如何通知全体成员📢","会议效率怎么提高","缺席成员怎么处理"]:
-                    aiChatId===1||aiChatId===9?["还有哪些DDL⏰","初赛要提交什么📦","评分标准是什么📊","有什么注意事项"]:
-                    aiChatId===4?["作业提交要求📝","有哪些DDL⏰","期末考试安排🎓","重点知识点是什么"]:
-                    aiChatId===2?["今日组会准备什么📊","实验进展汇报要点","有哪些待办⏰","曝光量参数建议"]:
-                    ["最近有哪些DDL⏰","总结一下待办📝","今天需要做什么","有什么重要通知"]
+                  {(aiChatId===13?["中山陵游玩推荐🗺️","附近有什么好吃的🍜","最近有哪些DDL⏰"]:
+                    aiChatId===20?["互动游戏怎么设计🎮","经费分配合理吗💰","最近有哪些DDL⏰"]:
+                    aiChatId===21?["谁的做法正确⚖️","如何应对冲突🤝","我应该道歉吗💬"]:
+                    aiChatId===18?["团建时间分析📅","最佳时间是哪天","活动内容建议🎉"]:
+                    aiChatId===19?["例会时间推荐📋","周二早上的优势","如何通知大家"]:
+                    ["最近有哪些DDL⏰","总结一下待办📝","今天需要做什么","组会要准备什么"]
                   ).map((q,i)=>(
                     <button key={i} onClick={()=>sendAI(q)} style={{padding:"5px 10px",borderRadius:12,border:"1px solid #E5E8EE",background:"#FAFBFD",color:"#4A90D9",fontSize:11,fontWeight:500,cursor:"pointer"}}>{q}</button>
                   ))}
                 </div>
               </div>
             )}
-
 
             <div style={{padding:"10px 12px",borderTop:"1px solid #F0F0F0",display:"flex",gap:6,flexShrink:0}}>
               <input value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&aiInput.trim())sendAI();}} placeholder={sharedMode?`你和 ${sharedMode.partnerName} 可以一起问 Q仔…`:"问问Q仔，如「中山陵游玩推荐」"} style={{flex:1,height:32,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:12,outline:"none",color:"#333"}}/>

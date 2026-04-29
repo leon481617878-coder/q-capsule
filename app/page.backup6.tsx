@@ -518,8 +518,6 @@ export default function QCapsuleDemo(){
   };
 
   // ── 多选 ─────────────────────────────────────────────────
-  const toggleSelectMode=()=>{setSelectMode(p=>!p);setSelMsgIds(new Set());};
-  const toggleMsgSel=(id:number)=>setSelMsgIds(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
   const MULTI_CTX:Record<number,string>={
     13:"这是我和朋友小美关于周末出游的私聊对话。请帮我：\n1.总结出游计划的确认情况（时间/地点/人员）\n2.梳理还需要准备的事项\n3.给出出行小建议",
     20:"这是我和策划部同学关于活动方案设计的讨论。请帮我：\n1.总结已确认的方案核心要点\n2.梳理还未解决的问题\n3.给出下一步行动建议",
@@ -538,7 +536,6 @@ export default function QCapsuleDemo(){
     setSelectMode(false);setSelMsgIds(new Set());
     openAI(activeChat,q);setRightTab("schedule");
   };
-
 
   // ── 右键菜单 ────────────────────────────────────────────
   const handleCM=(e:React.MouseEvent,msg:Message,cid:number)=>{e.preventDefault();e.stopPropagation();setCtxMenu({x:e.clientX,y:e.clientY,msg,cid});};
@@ -886,33 +883,22 @@ export default function QCapsuleDemo(){
               <div ref={aiEndRef}/>
             </div>
 
-            {(
+            {aiMessages.length<=1&&!aiLoading&&(
               <div style={{padding:"8px 14px",borderTop:"1px solid #F0F0F0",flexShrink:0}}>
-                <div style={{fontSize:10.5,color:"#999",marginBottom:7}}>
-                  {aiMessages.length<=1?"快速提问":"继续追问"}
-                </div>
+                <div style={{fontSize:10.5,color:"#999",marginBottom:7}}>快速提问</div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                  {(
-                    aiChatId===13?["出游路线怎么安排🗺️","需要提前预约吗🎫","附近有什么好吃的🍜","拍照技巧推荐📷"]:
-                    aiChatId===20?["互动游戏规则怎么设计🎮","经费分配合理吗💰","宣传物料准备什么📢","主持人怎么选"]:
-                    aiChatId===21?["谁的做法正确⚖️","如何化解这次冲突🤝","怎么建立宿舍规则📋","我需要道歉吗💬"]:
-                    aiChatId===3? ["曝光量参数怎么调⚗️","下次组会准备什么📊","彩色样品进度评估","横向周期偏差原因"]:
-                    aiChatId===10?["PPT哪里还需要改进📋","商业模式怎么写💡","还有哪些DDL⏰","答辩要注意什么"]:
-                    aiChatId===14?["待办事项清单📝","团建需要准备什么🏔️","班费怎么转账💳","班会注意事项"]:
-                    aiChatId===15?["帮我想一句感谢妈妈的话💝","假期回家需要准备什么","妈妈关心的事情汇总","如何回复让她放心"]:
-                    aiChatId===18?["最佳团建时间📅","团建活动内容建议🎉","预算大概多少💰","地点怎么选📍"]:
-                    aiChatId===19?["最佳例会时间推荐📋","如何通知全体成员📢","会议效率怎么提高","缺席成员怎么处理"]:
-                    aiChatId===1||aiChatId===9?["还有哪些DDL⏰","初赛要提交什么📦","评分标准是什么📊","有什么注意事项"]:
-                    aiChatId===4?["作业提交要求📝","有哪些DDL⏰","期末考试安排🎓","重点知识点是什么"]:
-                    aiChatId===2?["今日组会准备什么📊","实验进展汇报要点","有哪些待办⏰","曝光量参数建议"]:
-                    ["最近有哪些DDL⏰","总结一下待办📝","今天需要做什么","有什么重要通知"]
+                  {(aiChatId===13?["中山陵游玩推荐🗺️","附近有什么好吃的🍜","最近有哪些DDL⏰"]:
+                    aiChatId===20?["互动游戏怎么设计🎮","经费分配合理吗💰","最近有哪些DDL⏰"]:
+                    aiChatId===21?["谁的做法正确⚖️","如何应对冲突🤝","我应该道歉吗💬"]:
+                    aiChatId===18?["团建时间分析📅","最佳时间是哪天","活动内容建议🎉"]:
+                    aiChatId===19?["例会时间推荐📋","周二早上的优势","如何通知大家"]:
+                    ["最近有哪些DDL⏰","总结一下待办📝","今天需要做什么","组会要准备什么"]
                   ).map((q,i)=>(
                     <button key={i} onClick={()=>sendAI(q)} style={{padding:"5px 10px",borderRadius:12,border:"1px solid #E5E8EE",background:"#FAFBFD",color:"#4A90D9",fontSize:11,fontWeight:500,cursor:"pointer"}}>{q}</button>
                   ))}
                 </div>
               </div>
             )}
-
 
             <div style={{padding:"10px 12px",borderTop:"1px solid #F0F0F0",display:"flex",gap:6,flexShrink:0}}>
               <input value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&aiInput.trim())sendAI();}} placeholder={sharedMode?`你和 ${sharedMode.partnerName} 可以一起问 Q仔…`:"问问Q仔，如「中山陵游玩推荐」"} style={{flex:1,height:32,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:12,outline:"none",color:"#333"}}/>
