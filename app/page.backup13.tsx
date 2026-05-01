@@ -15,68 +15,6 @@ type EventForm = { title:string; date:string; startTime:string; endTime:string; 
 type SharedMode = { chatId:number; partnerName:string; partnerColor:string }|null;
 type FlightInfo = { flightNo:string; from:string; to:string; sTime:string; eTime:string; status:"正常"|"延误"|"取消"; delay?:string; gate?:string; };
 
-// ── 老师画像数据 ──────────────────────────────────────────
-const TEACHER_PROFILES: Record<string,{icon:string;label:string;color:string;detail:string}> = {
-  "张老师":      {icon:"⚠️", label:"从不延期",        color:"#FF4D4F", detail:"本学期已发出3次DDL提醒，本次措辞紧迫度↑，历史上从不接受补交"},
-  "翁一士":      {icon:"📊", label:"重视过程",         color:"#7B68EE", detail:"喜欢看中间数据与实验过程，缺席需提前告知"},
-  "李老师":      {icon:"💡", label:"偏宽松",           color:"#52C41A", detail:"DDL通常可协商，更关注报告质量"},
-  "大赛官助sasa":{icon:"🏆", label:"官方通知·严格执行",color:"#FA8C16", detail:"官方渠道，截止时间严格执行，无例外"},
-  "队友 周":     {icon:"🔥", label:"积极催促·截止意识强",color:"#FF6B6B",detail:"主动提醒团队DDL，执行力强"},
-  "助教 陈学长": {icon:"📋", label:"规则清晰",          color:"#4A90D9", detail:"规则说明清晰，不接受补交"},
-};
-
-// ── AI 推理理由生成 ───────────────────────────────────────
-const getAiReason = (title: string, level: string, from?: string): string => {
-  if(title.includes("计网")||title.includes("第三章")||title.includes("作业补充"))
-    return "张老师本学期已发出3次DDL提醒，本次措辞紧迫度↑ · 距截止仅7天 · 同期有3项任务竞争时间";
-  if(title.includes("创新赛")||title.includes("初赛"))
-    return "初赛截止与计网同天5月6日 · PPT v3待优化 · Q仔建议今晚计网优先，明日专注此项";
-  if(title.includes("操作系统")||title.includes("答辩"))
-    return "需现场答辩 · 机房405 · 占用完整下午时段，不可缺席";
-  if(title.includes("组会")||title.includes("腾讯会议"))
-    return "翁老师重视过程展示 · 今日16:30线上 · 缺席需提前告知";
-  if(title.includes("冲突"))
-    return "两个必须级事项时间重叠 · 建议优先确认可退出的一方，再通知另一方";
-  if(title.includes("账号")||title.includes("密码")||title.includes("敏感"))
-    return "隐私信息已本地AES-256加密 · 云端仅存指针 · 仅你可见，他人无法访问";
-  if(title.includes("重庆")||title.includes("出行")||title.includes("航班"))
-    return "出行计划已确认 · Q仔持续监控MU5435航班状态 · 发现变更立即通知";
-  if(title.includes("班费")||title.includes("团建"))
-    return "班级活动 · 可协商 · Q仔判断不影响学业核心任务";
-  if(level==="已确认") return "已写入日程，Q仔将在截止前按你偏好风格自动提醒";
-  if(level==="方案参考") return "来自群讨论总结，供规划参考，无需强制确认";
-  return "综合事件类型、截止远近与本周任务密度判断";
-};
-
-// ── Q仔用户画像数据（模拟AI学习结果）────────────────────
-const PROFILE_DATA={
-  taskPref:[
-    {label:"课程作业",stars:5,desc:"从不错过，截止前2天开始行动"},
-    {label:"竞赛项目",stars:4,desc:"积极参与，团队协作优先"},
-    {label:"社团活动",stars:3,desc:"参与但可协商请假"},
-    {label:"娱乐出行",stars:2,desc:"低优先，但会提前规划"},
-  ],
-  habits:[
-    "通常在截止前 2 天开始行动",
-    "下午 14:00–18:00 效率最高",
-    "倾向先处理「非延期型」课程作业",
-    "22:00 前集中确认当日代办",
-  ],
-  teacherStyles:[
-    {name:"张老师",  tag:"严格",     detail:"本学期3次DDL提醒，从不延期",    color:"#FF4D4F"},
-    {name:"翁老师",  tag:"重视过程", detail:"喜欢看中间数据，缺席需提前告知", color:"#7B68EE"},
-    {name:"李老师",  tag:"偏宽松",   detail:"DDL可协商，关注报告质量",        color:"#52C41A"},
-  ],
-  remindStyleHistory:{0:2,1:5,2:1,3:3} as Record<number,number>,
-  suggestion:"本周计网与创新赛同天截止（5月6日），合并来看可用时间约4小时。Q仔建议：今晚写计网，明日专注创新赛PPT。",
-  initialLearned:[
-    "手动调高「计网作业」优先级 ×1",
-    "忽略「班费通知」代办",
-    "偏好在 22:00 前确认当日代办",
-    "对「毒舌室友风」提醒响应最快（响应率45%）",
-  ],
-};
-
 const CHATS: Chat[] = [
   { id:1,  type:"group",   name:"2026PCG校园AI产品创意大赛官方沟通群", category:"竞赛",    avatar:"🏆", color:"#FF6B6B", count:1010, lastTime:"15:08", lastMsg:"云上枫加入了群聊",             unread:9,  pinned:true },
   { id:2,  type:"group",   name:"王老师课题组 | 光学组",               category:"科研",    avatar:"🔬", color:"#7B68EE", count:18,   lastTime:"16:32", lastMsg:"翁一士: 明日组会线上",         unread:6,  pinned:true },
@@ -184,52 +122,161 @@ const MSGS: Record<number,Message[]> = {
     {id:4,sender:"李老师",content:"可以，建议使用draw.io或者手绘扫描",time:"10:20",self:false},
     {id:5,sender:"你",content:"实验DDL是哪天？",time:"11:00",self:true},
     {id:6,sender:"助教",content:"@你 5月15日24点",time:"11:05",self:false},
-    {id:7,sender:"周同学",content:"[图片]",time:"11:08",self:false,date:"今天"},
-    {id:8,sender:"周同学",content:"我画的红黑树插入流程图，有不对的地方请大佬们指正🤝",time:"11:09",self:false},
+    {id:7,sender:"黄同学",content:"请问是要手写代码还是可以借助IDE",time:"11:30",self:false},
+    {id:8,sender:"助教",content:"IDE可以用，但代码要自己写不能抄",time:"11:32",self:false},
+    {id:9,sender:"刘同学",content:"C++还是Java写，或者都可以",time:"13:00",self:false},
+    {id:10,sender:"李老师",content:"不限语言，但要和报告说明一致",time:"13:05",self:false},
+    {id:11,sender:"你",content:"老师删除操作需要写详细推导过程吗",time:"13:20",self:true},
+    {id:12,sender:"李老师",content:"@你 写关键步骤就行",time:"13:22",self:false},
+    {id:13,sender:"周同学",content:"[图片]",time:"11:08",self:false,date:"今天"},
+    {id:14,sender:"周同学",content:"我画的红黑树插入流程图，有不对的地方请大佬们指正🤝",time:"11:09",self:false},
+    {id:15,sender:"林同学",content:"我觉得第3步应该先检查叔父节点颜色",time:"11:15",self:false},
+    {id:16,sender:"周同学",content:"你说得对！我改一下😭",time:"11:16",self:false},
   ],
   6:[
     {id:1,sender:"王教授",content:"同学们好，本周课程重点：进程调度算法（FCFS、SJF、RR）",time:"08:00",self:false,date:"4月21日 周一"},
-    {id:2,sender:"助教",content:"实验3报告模板已上传，注意需要现场答辩",time:"16:20",self:false,date:"昨天"},
-    {id:3,sender:"助教",content:"答辩时间：下周三（5月7日）下午14:00-17:00，机房405",time:"16:30",self:false},
+    {id:2,sender:"王教授",content:"课件已挂在课程网站，实验2截止：下周五",time:"08:02",self:false},
+    {id:3,sender:"助教",content:"实验2提交要求：实验报告（PDF）+ 代码（zip打包）+ 截图",time:"08:30",self:false},
+    {id:4,sender:"叶同学",content:"老师实验用Linux还是Windows环境",time:"10:00",self:false},
+    {id:5,sender:"助教",content:"推荐Linux，在虚拟机里做就行",time:"10:02",self:false},
+    {id:6,sender:"你",content:"实验2能用Python模拟吗还是要C语言",time:"10:10",self:true},
+    {id:7,sender:"助教",content:"@你 Python可以，但要注意系统调用部分",time:"10:12",self:false},
+    {id:8,sender:"王教授",content:"实验3报告模板已上传，注意需要现场答辩",time:"16:20",self:false,date:"昨天"},
+    {id:9,sender:"刘同学",content:"答辩什么时候",time:"16:25",self:false},
+    {id:10,sender:"助教",content:"下周三（5月7日）下午14:00-17:00，机房405",time:"16:30",self:false},
+    {id:11,sender:"你",content:"好的",time:"16:32",self:true},
+    {id:12,sender:"陈同学",content:"答辩需要PPT吗",time:"16:40",self:false},
+    {id:13,sender:"助教",content:"要的，5分钟汇报+5分钟提问",time:"16:42",self:false},
+    {id:14,sender:"邓同学",content:"实验3那个内存分配的题我还没看懂",time:"20:00",self:false},
+    {id:15,sender:"助教",content:"OS三大内存分配算法：首次适配、最佳适配、最差适配",time:"20:10",self:false},
+    {id:16,sender:"你",content:"感谢助教！收藏了",time:"20:12",self:true},
   ],
   7:[
     {id:1,sender:"班长 李同学",content:"大家好，关于本学期末的班级毕业旅行，先摸一下底",time:"09:00",self:false,date:"4月24日 周四"},
+    {id:2,sender:"吴同学",content:"我参加！去哪里呀",time:"09:05",self:false},
+    {id:3,sender:"你",content:"我也感兴趣，时间定了吗",time:"09:07",self:true},
+    {id:4,sender:"班长 李同学",content:"还没定，先看人数。30人以上才划算",time:"09:10",self:false},
+    {id:5,sender:"赵同学",content:"1",time:"09:15",self:false},
+    {id:6,sender:"钱同学",content:"2，去厦门吧",time:"09:16",self:false},
+    {id:7,sender:"孙同学",content:"3，赞成厦门+1",time:"09:17",self:false},
+    {id:8,sender:"你",content:"4",time:"09:18",self:true},
+    {id:9,sender:"周同学",content:"5",time:"09:20",self:false},
     {id:10,sender:"班长 李同学",content:"📢【班费收缴通知】每人150元，5月15日前转账",time:"10:30",self:false,date:"今天"},
+    {id:11,sender:"你",content:"好的，下午就转",time:"10:35",self:true},
+    {id:12,sender:"王同学",content:"收到👌",time:"10:38",self:false},
     {id:13,sender:"班长 李同学",content:"另外咱们班团建定在5月18日（周日），紫金山徒步",time:"10:45",self:false},
+    {id:14,sender:"陈同学",content:"1. 陈\n2. 王\n3. 你",time:"10:50",self:false},
+    {id:15,sender:"吴同学",content:"4. 吴，这次一定去",time:"10:52",self:false},
+    {id:16,sender:"林同学",content:"5. 林",time:"10:53",self:false},
   ],
   8:[
     {id:1,sender:"学院辅导员",content:"各位同学，毕业前的各项流程请认真对待",time:"09:00",self:false,date:"4月20日 周日"},
+    {id:2,sender:"学院辅导员",content:"📅 5/1-5/10 档案核查 / 5/10-5/20 论文初稿 / 5/25-6/10 盲审 / 6/15-6/18 答辩",time:"09:02",self:false},
+    {id:3,sender:"唐同学",content:"请问学位服在哪里领",time:"09:30",self:false},
+    {id:4,sender:"学院辅导员",content:"6月10日之后统一在学院楼下领",time:"09:32",self:false},
+    {id:5,sender:"邓同学",content:"如果盲审没过会怎样",time:"10:00",self:false},
+    {id:6,sender:"学院辅导员",content:"分优秀/良好/合格/不合格，不合格需修改后重新送审",time:"10:02",self:false},
+    {id:7,sender:"你",content:"请问论文字数有没有下限",time:"10:10",self:true},
+    {id:8,sender:"学院辅导员",content:"@你 本科不少于1.5万字，研究生不少于3万字",time:"10:12",self:false},
     {id:9,sender:"教务老师",content:"【毕业论文盲审说明】初稿截止5月20日，盲审5/25-6/10，答辩6/15-18",time:"16:00",self:false,date:"昨天"},
+    {id:10,sender:"冯同学",content:"档案可以不回原籍吗",time:"17:00",self:false},
+    {id:11,sender:"学院辅导员",content:"可以留在就业地，到就业单位的人事部门",time:"17:02",self:false},
+    {id:12,sender:"你",content:"档案不找工作就先挂在哪里",time:"17:05",self:true},
+    {id:13,sender:"学院辅导员",content:"@你 可以挂在户籍所在地的人才交流中心",time:"17:07",self:false},
+    {id:14,sender:"褚同学",content:"答辩完还要等多久拿学位证",time:"18:00",self:false},
+    {id:15,sender:"教务老师",content:"答辩通过后约1-2个月，7月底前会发",time:"18:05",self:false},
   ],
   9:[
     {id:1,sender:"队友 王",content:"大家好，先确认一下分工，我负责市场调研和商业模式",time:"10:00",self:false,date:"4月24日 周四"},
     {id:2,sender:"队友 周",content:"我做技术方案和架构图",time:"10:05",self:false},
     {id:3,sender:"你",content:"我来做产品设计和PPT视觉",time:"10:07",self:true},
+    {id:4,sender:"队友 刘",content:"我写用户调研和竞品分析",time:"10:09",self:false},
+    {id:5,sender:"队友 王",content:"好！那周四晚8点，腾讯会议，对齐进度",time:"10:13",self:false},
+    {id:6,sender:"队友 刘",content:"我发现一个竞品做得不错，等会截图发群里",time:"11:30",self:false},
+    {id:7,sender:"你",content:"他家这个排版不错，可以参考风格",time:"11:35",self:true},
+    {id:8,sender:"队友 王",content:"对对对，但我们差异化要体现出来",time:"11:37",self:false},
     {id:9,sender:"你",content:"我把PPT v3发群里了，大家看看",time:"11:20",self:true,date:"今天"},
     {id:10,sender:"你",content:"[文件] Team Phoenix_产品方案_v3.pptx",time:"11:21",self:true},
     {id:11,sender:"队友 王",content:"我看了，第8页商业模式那块有点单薄",time:"11:35",self:false},
+    {id:12,sender:"队友 刘",content:"+1 还有用户画像可以再具体点",time:"11:40",self:false},
+    {id:13,sender:"你",content:"好，我再补充一下，今晚改完发新版",time:"11:45",self:true},
     {id:14,sender:"队友 周",content:"⏰ 初赛截止5月6日23:59，下周一前要把所有材料定稿！",time:"13:00",self:false},
     {id:15,sender:"队友 周",content:"@全体成员 还剩 7 天，加油冲！",time:"13:01",self:false,atMe:true},
     {id:16,sender:"你",content:"收到，加油！",time:"13:22",self:true},
+    {id:17,sender:"队友 王",content:"加油！我今晚把商业模式那页补充好发给你",time:"13:25",self:false},
+    {id:18,sender:"队友 刘",content:"用户调研数据我再多找几个样本，周五发给你",time:"13:28",self:false},
   ],
   10:[
     {id:1,sender:"队友 刘正昂",content:"哥们，PPT你那部分做好了吗",time:"09:00",self:false,date:"4月24日 周四"},
-    {id:14,sender:"你",content:"框架基本出来了 [文件] 产品方案_框架v1.pptx",time:"15:05",self:true,date:"今天"},
+    {id:2,sender:"你",content:"做了一半，今天下午争取搞完",time:"09:03",self:true},
+    {id:3,sender:"队友 刘正昂",content:"用户调研那块等你框架出来我再填内容",time:"09:05",self:false},
+    {id:4,sender:"你",content:"行，3点前给你框架",time:"09:07",self:true},
+    {id:5,sender:"队友 刘正昂",content:"解决方案那块我有想法，等会发你参考",time:"09:15",self:false},
+    {id:6,sender:"你",content:"好的等你材料",time:"09:16",self:true},
+    {id:7,sender:"队友 刘正昂",content:"[文件] 竞品功能对比.docx",time:"10:30",self:false},
+    {id:8,sender:"你",content:"收到！对比挺详细，我参考一下",time:"10:35",self:true},
+    {id:9,sender:"队友 刘正昂",content:"初赛截止5月6日，这周PPT必须定稿",time:"11:00",self:false},
+    {id:10,sender:"你",content:"知道，我今晚出第一稿",time:"11:02",self:true},
+    {id:11,sender:"队友 刘正昂",content:"用户调研问卷快回收完了，数据今天整理给你",time:"11:05",self:false},
+    {id:12,sender:"你",content:"行，加油一起冲！",time:"11:07",self:true},
+    {id:13,sender:"队友 刘正昂",content:"下午进度咋样了",time:"15:00",self:false,date:"今天"},
+    {id:14,sender:"你",content:"框架基本出来了 [文件] 产品方案_框架v1.pptx",time:"15:05",self:true},
     {id:15,sender:"队友 刘正昂",content:"结构不错！解决方案那页再加个流程图",time:"15:20",self:false},
+    {id:16,sender:"你",content:"好，今晚改好发你",time:"15:22",self:true},
+    {id:17,sender:"队友 刘正昂",content:"调研数据整理好了，等会发过来",time:"16:00",self:false},
+    {id:18,sender:"你",content:"收到，框架定了马上开始填内容",time:"16:05",self:true},
     {id:19,sender:"队友 刘正昂",content:"争取今天下午把主体搞完，明天细化",time:"09:02",self:false},
   ],
   11:[
     {id:1,sender:"社长小明",content:"大家好！本学期第一次外拍活动定在下周六，报名接龙",time:"20:00",self:false,date:"4月20日 周日"},
+    {id:2,sender:"社员小张",content:"1. 张",time:"20:05",self:false},
+    {id:3,sender:"社员小红",content:"2. 红",time:"20:06",self:false},
+    {id:4,sender:"你",content:"3. 我",time:"20:07",self:true},
+    {id:5,sender:"社员小林",content:"4. 林，期待！",time:"20:08",self:false},
+    {id:6,sender:"社长小明",content:"已经有8个人报名，初定玄武湖，记得带长焦",time:"20:10",self:false},
+    {id:7,sender:"社员小张",content:"要带三脚架吗",time:"20:12",self:false},
+    {id:8,sender:"社长小明",content:"看个人，机动摄影更多一些",time:"20:14",self:false},
+    {id:9,sender:"你",content:"集合时间和地点定了吗",time:"20:15",self:true},
+    {id:10,sender:"社长小明",content:"@你 下午2点，玄武湖公园正门",time:"20:16",self:false},
     {id:11,sender:"社长小明",content:"周六外拍活动改到下午3点",time:"15:20",self:false,date:"昨天"},
+    {id:12,sender:"你",content:"收到！",time:"15:22",self:true},
     {id:13,sender:"社长小明",content:"对了，地点改到情人谷，下马坊站A出口 14:30",time:"19:45",self:false},
+    {id:14,sender:"社员小张",content:"👍",time:"19:46",self:false},
+    {id:15,sender:"你",content:"好的",time:"19:50",self:true},
   ],
   12:[
     {id:1,sender:"宣传部长",content:"五月份咱们部门有三场活动，今天先开个预备会",time:"09:00",self:false,date:"4月20日 周日"},
+    {id:2,sender:"宣传部长",content:"• 5/10 校园歌手大赛\n• 5/18 创新创业讲座\n• 5/25 毕业生晚会",time:"09:02",self:false},
+    {id:3,sender:"陆同学",content:"我可以认领5/10校园歌手",time:"09:10",self:false},
+    {id:4,sender:"伍同学",content:"我认领5/25毕业晚会",time:"09:11",self:false},
+    {id:5,sender:"你",content:"我可以协助5/18讲座",time:"09:12",self:true},
+    {id:6,sender:"宣传部长",content:"很好，5/18讲座还差一个人",time:"09:14",self:false},
+    {id:7,sender:"钱同学",content:"我和他搭档",time:"09:15",self:false},
+    {id:8,sender:"宣传部长",content:"分工：宣传海报提前1周出，当天负责摄影+推文",time:"09:17",self:false},
+    {id:9,sender:"你",content:"海报我来做，摄影钱同学负责？",time:"09:18",self:true},
+    {id:10,sender:"钱同学",content:"可以，我来",time:"09:19",self:false},
     {id:11,sender:"宣传部长",content:"[文件] 5月活动排期.xlsx",time:"10:00",self:false,date:"周一"},
+    {id:12,sender:"宣传部长",content:"大家自愿认领，发我私聊",time:"10:05",self:false},
+    {id:13,sender:"伍同学",content:"收到！",time:"10:08",self:false},
+    {id:14,sender:"翟同学",content:"讲座的嘉宾有没有确定",time:"10:30",self:false},
+    {id:15,sender:"宣传部长",content:"请到了一位创业公司CEO，下周公布",time:"10:32",self:false},
+    {id:16,sender:"你",content:"期待！",time:"10:33",self:true},
   ],
+  // ── 小美：重庆出行讨论 ──────────────────────────────────
   13:[
     {id:1,sender:"小美",content:"在吗在吗！下个周末有空不",time:"10:00",self:false,date:"4月26日 周六"},
+    {id:2,sender:"你",content:"在！干啥",time:"10:05",self:true},
+    {id:3,sender:"小美",content:"想出去玩，去重庆怎么样？火锅+洪崖洞+轻轨穿楼，绝绝子！",time:"10:08",self:false},
+    {id:4,sender:"你",content:"好啊好啊！想去好久了，几号走？",time:"10:10",self:true},
     {id:5,sender:"小美",content:"我看了一下，5月10日周六出发，5月12日周一回，刚好两天一晚",time:"10:12",self:false},
+    {id:6,sender:"你",content:"行，我课表对得上。怎么去？高铁还是飞机",time:"10:15",self:true},
+    {id:7,sender:"小美",content:"飞机吧，高铁要10个小时，太累了。机票我看了下500多",time:"10:18",self:false},
+    {id:8,sender:"你",content:"飞机靠谱，节省时间。哪个航班？",time:"10:20",self:true},
+    {id:9,sender:"小美",content:"南京-重庆，9点起飞那班还是11点的？",time:"10:22",self:false},
+    {id:10,sender:"你",content:"9点的吧，到了重庆刚好中午吃火锅😋",time:"10:24",self:true},
+    {id:11,sender:"小美",content:"哈哈我也这么想！酒店住哪儿",time:"10:26",self:false},
+    {id:12,sender:"你",content:"解放碑附近吧，去哪都方便",time:"10:28",self:true},
+    {id:13,sender:"小美",content:"行，我订一个看看",time:"10:30",self:false},
     {id:14,sender:"小美",content:"机票订好啦！🎉",time:"15:20",self:false,date:"今天"},
     {id:15,sender:"小美",content:"航班：MU5435，南京禄口 → 重庆江北\n5月10日 09:30 起飞，11:55 到达\n回程：MU5436，5月12日 18:00",time:"15:22",self:false},
     {id:16,sender:"你",content:"收到！我把这个加到日程里",time:"15:25",self:true},
@@ -237,23 +284,72 @@ const MSGS: Record<number,Message[]> = {
     {id:18,sender:"小美",content:"机票订好啦！周六见",time:"15:30",self:false},
   ],
   14:[
+    {id:1,sender:"班长 李同学",content:"兄弟，毕业旅行你报名了吗",time:"09:00",self:false,date:"4月24日 周四"},
+    {id:2,sender:"你",content:"报了！在群里接龙了",time:"09:05",self:true},
+    {id:3,sender:"班长 李同学",content:"ok好，可能去厦门，大概6月底",time:"09:07",self:false},
+    {id:4,sender:"你",content:"答辩完了应该就可以",time:"09:09",self:true},
     {id:5,sender:"班长 李同学",content:"兄弟，班费150记得交一下",time:"10:50",self:false,date:"今天"},
     {id:6,sender:"班长 李同学",content:"另外团建你去吗？",time:"10:51",self:false},
     {id:7,sender:"你",content:"班费今天转！团建我去",time:"10:55",self:true},
+    {id:8,sender:"班长 李同学",content:"收到，帮你登记了",time:"10:56",self:false},
+    {id:9,sender:"你",content:"谢谢！紫金山是全天活动还是半天",time:"10:57",self:true},
+    {id:10,sender:"班长 李同学",content:"全天，上午爬山下午休息，晚上集体吃饭",time:"10:58",self:false},
+    {id:11,sender:"你",content:"明白！",time:"10:59",self:true},
+    {id:12,sender:"班长 李同学",content:"另外下周一早上有个辅导员要求的班会，9点",time:"11:00",self:false},
+    {id:13,sender:"你",content:"好的，我记下来了",time:"11:01",self:true},
   ],
   15:[
-    {id:9,sender:"妈妈",content:"记得吃饭啊孩子",time:"21:00",self:false,date:"昨天"},
+    {id:1,sender:"妈妈",content:"孩子在忙什么呢",time:"10:00",self:false,date:"4月22日 周二"},
+    {id:2,sender:"你",content:"在写作业，最近有点多",time:"10:05",self:true},
+    {id:3,sender:"妈妈",content:"注意休息，别熬太晚",time:"10:07",self:false},
+    {id:4,sender:"你",content:"知道了妈，你们在家都好吧",time:"10:08",self:true},
+    {id:5,sender:"妈妈",content:"好好的，你爸去钓鱼了，钓了好多",time:"10:09",self:false},
+    {id:6,sender:"你",content:"哈哈好，那我放假回去",time:"10:10",self:true},
+    {id:7,sender:"妈妈",content:"孩子，妈给你寄了点家里的腊肉，明后天到",time:"18:30",self:false,date:"昨天"},
+    {id:8,sender:"你",content:"好嘞！谢谢妈",time:"18:35",self:true},
+    {id:9,sender:"妈妈",content:"记得吃饭啊孩子，别老吃外卖",time:"21:00",self:false},
     {id:10,sender:"你",content:"妈我吃的，你放心",time:"21:05",self:true},
+    {id:11,sender:"妈妈",content:"今天吃什么了",time:"21:06",self:false},
+    {id:12,sender:"你",content:"下午食堂吃的黄焖鸡，挺好的",time:"21:08",self:true},
+    {id:13,sender:"妈妈",content:"那不错，多吃蔬菜",time:"21:09",self:false},
+    {id:14,sender:"你",content:"嗯嗯！妈你早点睡",time:"21:10",self:true},
+    {id:15,sender:"妈妈",content:"好，你也早点睡，明天还有课",time:"21:11",self:false},
+    {id:16,sender:"你",content:"好的妈，晚安！",time:"21:12",self:true},
   ],
   16:[
+    {id:1,sender:"宿舍老二",content:"今天谁去图书馆的",time:"08:00",self:false,date:"4月26日 周六"},
+    {id:2,sender:"宿舍老三",content:"没有，我摸鱼一天",time:"08:05",self:false},
+    {id:3,sender:"你",content:"我本来要去，起晚了",time:"08:06",self:true},
+    {id:4,sender:"宿舍老四",content:"我说今天去，结果在床上刷了三个小时B站",time:"08:08",self:false},
+    {id:5,sender:"宿舍老二",content:"哈哈哈这就是当代大学生",time:"08:09",self:false},
+    {id:6,sender:"你",content:"哎对了，毕业论文写了多少",time:"10:00",self:true},
+    {id:7,sender:"宿舍老三",content:"3000字，离1.5万字还差一个小目标",time:"10:02",self:false},
+    {id:8,sender:"宿舍老四",content:"我已经写完了……字数",time:"10:03",self:false},
+    {id:9,sender:"宿舍老三",content:"你是神吗",time:"10:04",self:false},
+    {id:10,sender:"宿舍老四",content:"我是指凑字数凑完了，内容……还差得远",time:"10:05",self:false},
+    {id:11,sender:"你",content:"哈哈哈我也是凑字数高手",time:"10:06",self:true},
     {id:12,sender:"宿舍老二",content:"今天又没去图书馆",time:"15:20",self:false,date:"昨天"},
     {id:13,sender:"宿舍老三",content:"我也是，论文一个字没写",time:"15:22",self:false},
     {id:14,sender:"你",content:"看了一天b站😇",time:"15:30",self:true},
+    {id:15,sender:"宿舍老四",content:"我起码出门买了杯奶茶",time:"15:32",self:false},
   ],
   17:[
     {id:1,sender:"活动部小张",content:"大家好，5月志愿活动安排出来了",time:"10:00",self:false,date:"4月20日 周日"},
     {id:2,sender:"活动部小张",content:"📅 5月排期：\n• 5/12 图书馆整理 8:00-12:00\n• 5/19 校园清洁 14:00-17:00\n• 5/26 毕业典礼引导 8:00-18:00",time:"10:02",self:false},
+    {id:3,sender:"志愿者小李",content:"5/26毕业典礼我可以参加！",time:"10:10",self:false},
+    {id:4,sender:"你",content:"我报名5/12图书馆整理",time:"10:12",self:true},
+    {id:5,sender:"志愿者小王",content:"我三个都报！",time:"10:13",self:false},
+    {id:6,sender:"活动部小张",content:"每次活动都有志愿时长证明",time:"10:15",self:false},
+    {id:7,sender:"志愿者小赵",content:"志愿时长多少小时每次",time:"10:17",self:false},
+    {id:8,sender:"活动部小张",content:"图书馆4小时，清洁3小时，毕业典礼8小时",time:"10:18",self:false},
+    {id:9,sender:"你",content:"服装要求有吗",time:"10:20",self:true},
+    {id:10,sender:"活动部小张",content:"@你 穿校服或白色T恤+深色裤子",time:"10:21",self:false},
     {id:11,sender:"活动部小张",content:"5/12志愿排班已出，请大家在群文件查看",time:"14:00",self:false,date:"周日"},
+    {id:12,sender:"你",content:"收到",time:"14:30",self:true},
+    {id:13,sender:"志愿者小赵",content:"我在第二组对吗",time:"14:35",self:false},
+    {id:14,sender:"活动部小张",content:"对，二组8:30在图书馆门口集合",time:"14:37",self:false},
+    {id:15,sender:"你",content:"我在第几组",time:"14:40",self:true},
+    {id:16,sender:"活动部小张",content:"@你 你在第一组，8:00集合",time:"14:42",self:false},
   ],
   18:[
     {id:1,sender:"社长小李",content:"🎉 各位会员大家好！五月份协会打算组织一次线下团建，想提前统计大家方便的时间",time:"10:00",self:false,date:"今天"},
@@ -266,25 +362,63 @@ const MSGS: Record<number,Message[]> = {
     {id:8,sender:"策划部 小陈",content:"我都有时间！全程参与！",time:"10:16",self:false},
     {id:9,sender:"外联部 小周",content:"周六下午可以，周日有其他安排",time:"10:18",self:false},
     {id:10,sender:"财务部 小刘",content:"周三晚上和周末下午ok",time:"10:20",self:false},
+    {id:11,sender:"技术部 老高",content:"我周末两天都可以，工作日有实验不确定",time:"10:22",self:false},
+    {id:12,sender:"宣传部 小孙",content:"五一之后的周六全天都有空",time:"10:25",self:false},
+    {id:13,sender:"社长小李",content:"大家都很积极！再等几个人回复哈",time:"10:27",self:false},
+    {id:14,sender:"运营部 小何",content:"周四晚上或周末下午都行",time:"10:30",self:false},
+    {id:15,sender:"外联部 小郑",content:"工作日晚上都行，周末上午有健身",time:"10:32",self:false},
     {id:16,sender:"技术部 小冯",content:"我5月10号之前有项目要交，10号以后随时都行",time:"10:35",self:false},
+    {id:17,sender:"策划部 小许",content:"周六全天都有空！",time:"10:38",self:false},
+    {id:18,sender:"宣传部 小曹",content:"工作日我晚上8点后才有空，周末随意",time:"10:40",self:false},
     {id:19,sender:"社长小李",content:"@Q仔 大家时间都回复得差不多了，帮忙统计一下什么时间段参与人数最多！",time:"10:42",self:false,atMe:true},
     {id:20,sender:"你",content:"等Q仔出结果👀",time:"10:45",self:true},
   ],
   20:[
     {id:1,sender:"陈晓雨",content:"你好，关于下个月的五四主题晚会方案，想和你对一下思路",time:"14:00",self:false,date:"4月28日 周一"},
+    {id:2,sender:"你",content:"好的，你说说看你的想法",time:"14:02",self:true},
+    {id:3,sender:"陈晓雨",content:"我设想了三个主板块：①文艺演出 ②互动游戏 ③颁奖典礼",time:"14:05",self:false},
+    {id:4,sender:"你",content:"框架不错！互动游戏这块感觉太宽泛了，得具体化",time:"14:08",self:true},
+    {id:5,sender:"陈晓雨",content:"你说得对，互动游戏可以怎么具体化？",time:"14:10",self:false},
     {id:6,sender:"你",content:"可以做一个「青春知识闯关」——历史知识竞答+抢答",time:"14:13",self:true},
+    {id:7,sender:"陈晓雨",content:"这个好！那颁奖典礼这块奖项设置怎么样会更有意思？",time:"14:16",self:false},
+    {id:8,sender:"你",content:"可以整：「最强卷王奖」「最佳摸鱼奖」「深夜007奖」",time:"14:20",self:true},
+    {id:9,sender:"陈晓雨",content:"哈哈哈哈好！文艺演出这块，朗诵2个、舞蹈1个、合唱1个",time:"14:22",self:false},
+    {id:10,sender:"你",content:"够了，控制在1.5小时内比较好",time:"14:24",self:true},
+    {id:11,sender:"陈晓雨",content:"经费整场活动预算3000，怎么分配比较合理？",time:"14:26",self:false},
+    {id:12,sender:"你",content:"演出道具800，场地布置800，奖品700，主持200，备用500",time:"14:29",self:true},
+    {id:13,sender:"陈晓雨",content:"OK！我画了个流程草稿 [图片]",time:"14:35",self:false},
+    {id:14,sender:"你",content:"看到了，闯关环节可以再加一个「团队协作」题型",time:"14:38",self:true},
+    {id:15,sender:"陈晓雨",content:"好主意！层次更丰富",time:"14:40",self:false},
     {id:16,sender:"你",content:"我把刚才聊的让Q仔总结了一下，共享给你",time:"14:42",self:true},
     {id:17,sender:"陈晓雨",content:"收到了！这个总结超全 🎉",time:"14:45",self:false},
+    {id:18,sender:"你",content:"有道理，你也可以直接在共享界面问Q仔",time:"14:47",self:true},
+    {id:19,sender:"陈晓雨",content:"嗯嗯！我直接问Q仔互动游戏的具体规则",time:"14:49",self:false},
     {id:20,sender:"陈晓雨",content:"那这个互动环节怎么设计",time:"16:45",self:false},
   ],
   21:[
     {id:1,sender:"室友 老钱",content:"我觉得你最近把宿舍公共区域搞得太乱了",time:"21:00",self:false,date:"昨天"},
+    {id:2,sender:"你",content:"我有乱吗？我一直都有整理自己那块的",time:"21:02",self:true},
+    {id:3,sender:"室友 老钱",content:"你的书堆了大半张桌子，我都没地方放东西了",time:"21:04",self:false},
+    {id:4,sender:"你",content:"那堆书不全是我的，中间那本是老二放的",time:"21:06",self:true},
+    {id:5,sender:"室友 老钱",content:"就算有一本是老二的，你剩下那几本不也占着地方吗",time:"21:08",self:false},
+    {id:6,sender:"你",content:"我什么时候推卸责任了？你这说话方式我很不舒服",time:"21:10",self:true},
+    {id:7,sender:"室友 老钱",content:"上周那个快递盒放了三天你都没扔",time:"21:12",self:false},
+    {id:8,sender:"你",content:"那周我期末复习，确实忘了，但这是小事",time:"21:14",self:true},
+    {id:9,sender:"室友 老钱",content:"小事积累起来就是大事。集体生活要考虑别人",time:"21:16",self:false},
+    {id:10,sender:"你",content:"我确实不够细心，这点我承认，但你说话方式让我不舒服",time:"21:18",self:true},
+    {id:11,sender:"室友 老钱",content:"我说话有什么问题？我就是在说实话，你太敏感了",time:"21:20",self:false},
+    {id:12,sender:"你",content:"你说我「太敏感」，这就是问题——这是在否定我的感受",time:"21:22",self:true},
+    {id:13,sender:"室友 老钱",content:"行行行，我说话方式有问题，你满意了？",time:"21:25",self:false},
+    {id:14,sender:"你",content:"我没有说我没问题，但你现在的态度根本没办法好好谈",time:"21:27",self:true},
     {id:15,sender:"室友 老钱",content:"……好，那我们先冷静一下吧，但公共区域的事情要解决",time:"21:30",self:false},
     {id:16,sender:"你",content:"同意。我让Q仔帮我分析了一下，共享给你",time:"21:35",self:true},
+    {id:17,sender:"室友 老钱",content:"……好，发来看看",time:"21:37",self:false},
+    {id:18,sender:"室友 老钱",content:"我看了。Q仔说的「沟通时多用我感觉而非你总是」这点，我确实做得不太好",time:"21:45",self:false},
+    {id:19,sender:"你",content:"我也有问题，桌子确实应该整理的",time:"21:47",self:true},
     {id:20,sender:"室友 老钱",content:"我觉得你理解有误，是我觉得Q仔说的「两人均有道理」太圆滑了",time:"21:50",self:false},
   ],
 };
-
+// ── 群体排期 ─────────────────────────────────────────────
 const GROUP_SCHED: Record<number,{gName:string;total:number;slots:{label:string;count:number;pct:number;who:string}[];best:{label:string;pct:number;date:string;sT:string;eT:string;title:string;color:string};note:string}> = {
   18:{gName:"计算机协会·团建",total:18,slots:[
     {label:"周六下午 14:00-17:00",count:16,pct:88,who:"张/小美/小赵/老高/小许等16人"},
@@ -294,11 +428,13 @@ const GROUP_SCHED: Record<number,{gName:string;total:number;slots:{label:string;
   ],best:{label:"周六下午 14:00-17:00",pct:88,date:"2026-05-16",sT:"14:00",eT:"17:00",title:"💻 计算机协会团建",color:"#E0F7FA"},note:"建议5月10日之后的周六（等小冯结束项目），88%参与率最高"},
 };
 
+// ── 航班信息（用于出行讨论实时监控）──────────────────────
 const FLIGHTS: Record<string,FlightInfo> = {
   "MU5435":{flightNo:"MU5435",from:"南京禄口T2",to:"重庆江北T3",sTime:"09:30",eTime:"11:55",status:"延误",delay:"延误40分钟，预计10:10起飞",gate:"B12"},
   "MU5436":{flightNo:"MU5436",from:"重庆江北T3",to:"南京禄口T2",sTime:"18:00",eTime:"20:25",status:"正常",gate:"待定"},
 };
 
+// ── 日程 ──────────────────────────────────────────────────
 const TODAY = "2026-04-29";
 const INIT_SCH: ScheduleEvent[] = [
   {id:1, date:"2026-04-29",startTime:"10:10",endTime:"11:00",title:"国家安全学",       location:"逸C-114",  type:"class",color:"#E3F2FD",priority:"medium"},
@@ -313,6 +449,7 @@ const INIT_SCH: ScheduleEvent[] = [
   {id:10,date:"2026-05-15",startTime:"23:59",endTime:"23:59",title:"数据结构实验DDL",                       type:"task", color:"#FFE7BA",priority:"high"},
 ];
 
+// ── 样式系统 ──────────────────────────────────────────────
 const IMP:Record<Priority,{bg:string;border:string;badge:string;dot:string;label:string}> = {
   high:   {bg:"#FFF1F0",border:"#FF7875",badge:"#FF4D4F",dot:"#FF4D4F",label:"紧急"},
   medium: {bg:"#FFF7E6",border:"#FFB340",badge:"#FA8C16",dot:"#FA8C16",label:"重要"},
@@ -334,6 +471,7 @@ const getCS=(c:Capsule)=>{
 };
 const prColor=(p?:Priority)=>p==="high"?"#FF4D4F":p==="medium"?"#FA8C16":"#52C41A";
 
+// ── 初始代办 ──────────────────────────────────────────────
 const INIT_CAPS:Capsule[]=[
   {id:101,type:"pending", importance:"medium",group:"计算机网络 · 课程群",title:"📎 第三章作业 DDL",  content:"5月6日 23:59 前提交\nWord格式，不少于3000字\n邮箱+学习通双平台",            time:"14:20",from:"张老师",  new:true, createdAt:TODAY,scheduleData:{date:"2026-05-06",startTime:"23:00",endTime:"23:59",title:"📎 计网作业截止",type:"task",color:"#FFE7BA",priority:"medium"}},
   {id:102,type:"pending", importance:"medium",group:"计网课程群",          title:"📍 周四课地点变更", content:"4月30日 14:00 → 教三-204\n时间不变",                                       time:"14:00",from:"张老师",  new:true, createdAt:TODAY,scheduleData:{date:"2026-04-30",startTime:"14:00",endTime:"16:00",title:"🔄 计网课（教三-204）",type:"class",color:"#E6F7FF",priority:"medium"}},
@@ -343,6 +481,7 @@ const INIT_CAPS:Capsule[]=[
   {id:106,type:"pending", importance:"high",  group:"王老师课题组",        title:"🔬 今日组会 16:30", content:"4月29日 16:30-19:30\n腾讯会议线上",                                       time:"16:32",from:"翁一士",  new:true, createdAt:TODAY,scheduleData:{date:"2026-04-29",startTime:"16:30",endTime:"19:30",title:"🔬 课题组组会(线上)",type:"event",color:"#F9F0FF",priority:"high"}},
 ];
 
+// ── AI 摘要 ───────────────────────────────────────────────
 const AI_SUM:Record<number,string>={
   1: "📋 **对话总结（PCG大赛群）**\n\n• 提交：PPT（≤20页）+ Demo视频（≤5分钟）\n• 报名截止：5月10日，初赛提交：5月20日\n• 评分5维度：用户洞察/产品方案/AI能力/落地/创新\n\n📌 **待办**\n1. 报名截止 5月10日\n2. Demo视频准备",
   2: "📋 **对话总结（课题组）**\n\n• 今日重点：16:30 腾讯会议组会\n• 实验进展：横向周期偏差10nm\n\n📌 **待办**\n1. ⚡ 今天16:30参加腾讯会议\n2. 整理彩色样品进展",
@@ -358,12 +497,14 @@ const AI_SUM:Record<number,string>={
 
 function aiFollowup(q:string,chatId:number):string{
   const lq=q.toLowerCase();
-  if(lq.includes("重庆")||lq.includes("火锅")||lq.includes("洪崖洞"))return `🌶️ **重庆游玩推荐**\n\n**第一天（5/10）：**\n• 中午抵达后吃火锅（推荐：朱光玉、珮姐）\n• 下午：洪崖洞观景\n• 晚上：千厮门大桥夜景\n\n**第二天（5/11）：**\n• 上午：磁器口古镇\n• 下午：李子坝轻轨穿楼`;
-  if(lq.includes("航班")||lq.includes("飞机")||lq.includes("延误"))return `✈️ **航班实时状态**\n\n**MU5435（去程）⚠️ 状态变更**\n• 南京禄口T2 → 重庆江北T3\n• 计划：5/10 09:30 起飞\n• 实时：**延误40分钟**，预计10:10起飞\n• 登机口：B12\n\n**MU5436（回程）**\n• 5/12 18:00 起飞，状态正常\n\n💡 我会持续监控，有变更立即通知。`;
-  if(lq.includes("互动游戏"))return `🎮 **「青春知识闯关」规则**\n\n• 第1轮·个人闯关（5分钟）：10题历史知识\n• 第2轮·队伍竞赛（8分钟）：6支队抢答\n• 第3轮·团队协作（7分钟）：青春拼图`;
-  if(lq.includes("ddl")||lq.includes("截止"))return `⏰ **近期DDL**\n\n🔴 紧急（一周内）：\n• 创新赛初赛 → 5月6日\n• 计网作业 → 5月6日\n\n🟡 待关注：\n• 数据结构实验 → 5月15日\n• 操作系统答辩 → 5月7日`;
+  if(lq.includes("中山陵")||lq.includes("游玩"))return `🗺️ **游玩攻略**\n\n• 博爱坊→陵门→碑亭（20min）\n• 石阶长廊（20min）\n• 祭堂（20min）\n• 梅花山（30min）\n\n实用提示：门票免费需预约 / 平底鞋 / 充电宝`;
+  if(lq.includes("重庆")||lq.includes("火锅")||lq.includes("洪崖洞"))return `🌶️ **重庆游玩推荐**\n\n**第一天（5/10）：**\n• 中午抵达后吃火锅（推荐：朱光玉、珮姐）\n• 下午：洪崖洞观景\n• 晚上：千厮门大桥夜景\n\n**第二天（5/11）：**\n• 上午：磁器口古镇\n• 下午：李子坝轻轨穿楼\n• 晚上：南山一棵树看夜景\n\n**第三天（5/12）：**\n• 上午：白象居电梯/解放碑\n• 下午：返程`;
+  if(lq.includes("航班")||lq.includes("飞机")||lq.includes("延误")||lq.includes("机票"))return `✈️ **航班实时状态**\n\n**MU5435（去程）⚠️ 状态变更**\n• 南京禄口T2 → 重庆江北T3\n• 计划：5/10 09:30 起飞\n• 实时：**延误40分钟**，预计10:10起飞\n• 登机口：B12\n\n**MU5436（回程）**\n• 重庆江北T3 → 南京禄口T2\n• 5/12 18:00 起飞，状态正常\n\n💡 我会持续监控，有变更立即通知。建议提前2小时到机场。`;
+  if(lq.includes("酒店")||lq.includes("住宿"))return `🏨 **酒店信息确认**\n\n• 位置：洪崖洞旁边\n• 入住：5月10日\n• 退房：5月12日\n• 步行5分钟到观景台\n\n💡 已加入出行监控，如酒店有变更会通知`;
   if(lq.includes("谁对")||lq.includes("谁正确"))return `⚖️ **客观分析**\n\n两人都有合理之处：\n• 老钱诉求合理：集体生活需要维护共享空间\n• 你的感受也合理：「你太敏感」是否定性表达\n\n这是沟通方式冲突，不是价值观冲突。`;
   if(lq.includes("冲突")||lq.includes("化解"))return `🤝 **化解策略**\n\n• 双方先冷静20分钟\n• 主动认错：「我承认桌子有点乱」\n• 表达感受：「我希望我们更平和地说」\n• 建立规则：杂物24h内清理`;
+  if(lq.includes("互动游戏"))return `🎮 **「青春知识闯关」规则**\n\n• 第1轮·个人闯关（5分钟）：10题历史知识\n• 第2轮·队伍竞赛（8分钟）：6支队抢答\n• 第3轮·团队协作（7分钟）：青春拼图`;
+  if(lq.includes("ddl")||lq.includes("截止"))return `⏰ **近期DDL**\n\n🔴 紧急（一周内）：\n• 创新赛初赛 → 5月6日\n• 计网作业 → 5月6日\n\n🟡 待关注：\n• 数据结构实验 → 5月15日\n• 操作系统答辩 → 5月7日`;
   const chat=CHATS.find(c=>c.id===chatId);
   return `我理解你问的是「${q}」。基于「${chat?.name||"当前对话"}」，我可以帮你总结、提醒DDL、给行动建议。`;
 }
@@ -373,6 +514,7 @@ function partnerFirstMsg(chatId:number):string{
     20:"这份总结超全！经费那块我觉得演出道具可以再压一点",
     21:"……我看了。Q仔说的「沟通时多用我感觉而非你总是」这点，我确实做得不太好",
     13:"我也看完了！Q仔说航班可能延误，我们要提前出门吗",
+    3: "师弟，这个总结我也看到了，曝光量的问题你可以再确认一下",
   };
   return m[chatId]||"";
 }
@@ -421,14 +563,13 @@ function filterCaps(caps:Capsule[],f:CapsuleFilter){
 const EF:EventForm={title:"",date:TODAY,startTime:"09:00",endTime:"10:00",location:"",type:"class",priority:"medium"};
 const colorMap:Record<string,string>={class:"#E3F2FD",task:"#FFE7BA",event:"#F0FFF4",exam:"#FFF0F6",travel:"#E6FFFB"};
 
+// 演示按钮模块颜色（按模块分组，同模块同色）
 const MODULE_COLORS={
-  capsule:"#FA8C16",
-  remind: "#7B68EE",
-  group:  "#20B2AA",
-  social: "#36CFC9",
-  insight:"#9B59B6",
+  capsule:"#FA8C16",   // 代办生成
+  remind: "#7B68EE",   // 智能提醒
+  group:  "#20B2AA",   // 群体排期
+  social: "#36CFC9",   // 方案&矛盾
 };
-
 export default function QCapsuleDemo(){
   const [activeChat,    setActiveChat]    = useState(2);
   const [messages,      setMessages]      = useState(MSGS);
@@ -438,10 +579,10 @@ export default function QCapsuleDemo(){
   const [newCapIds,     setNewCapIds]     = useState<number[]>([101,102,103,105,106]);
   const [flyingCap,     setFlyingCap]     = useState<number|null>(null);
   const [toast,         setToast]         = useState<{msg:string;color:string}|null>(null);
-  const [rightTab,      setRightTab]      = useState<"schedule"|"capsule"|"priority"|"profile">("schedule");
+  const [rightTab,      setRightTab]      = useState<"schedule"|"capsule"|"priority">("schedule");
   const [searchKw,      setSearchKw]      = useState("");
   const [reminderEv,    setReminderEv]    = useState<ScheduleEvent|null>(null);
-  const [selStyle,      setSelStyle]      = useState(1); // default毒舌室友 (AI pre-selected)
+  const [selStyle,      setSelStyle]      = useState(0);
   const [sentReminder,  setSentReminder]  = useState(false);
   const [aiVisible,     setAiVisible]     = useState(false);
   const [aiChatId,      setAiChatId]      = useState<number|null>(null);
@@ -471,23 +612,20 @@ export default function QCapsuleDemo(){
   const [timeJumped,    setTimeJumped]    = useState(false);
   const [alertBanner,   setAlertBanner]   = useState(false);
   const [priorityDone,  setPriorityDone]  = useState<Set<string>>(new Set());
+  // 演示栏拖动
   const [demoBarPos,    setDemoBarPos]    = useState<{x:number;y:number}>({x:380,y:16});
   const [demoBarDrag,   setDemoBarDrag]   = useState<{startX:number;startY:number;origX:number;origY:number}|null>(null);
+  // 导入弹窗
   const [showImportModal,setShowImportModal]=useState(false);
   const [importStep,    setImportStep]    = useState<"choose"|"loading"|"done">("choose");
   const [importMethod,  setImportMethod]  = useState<string>("");
+  // 航班详情弹窗
   const [flightModal,   setFlightModal]   = useState<string|null>(null);
   const [travelMonitor, setTravelMonitor] = useState(false);
   const [aiCtxMenu,    setAiCtxMenu]    = useState<{x:number;y:number;content:string}|null>(null);
   const [priorityOverrides, setPriorityOverrides] = useState<Record<string,string>>({});
   const [editingPItem,  setEditingPItem]  = useState<{id:string;title:string;level:string;desc:string}|null>(null);
-  const [aiLearnLog,    setAiLearnLog]    = useState<{from:string;to:string;title:string;time:string}[]>([]);
-  // ── 新增状态 ──────────────────────────────────────────────
-  const [showCrossAnalysis, setShowCrossAnalysis] = useState(false);
-  // 提醒风格使用历史（模拟AI学到的偏好）
-  const [reminderStyleCounts, setReminderStyleCounts] = useState<Record<number,number>>({...PROFILE_DATA.remindStyleHistory});
-  // 手动抓取次数（AI学习记录）
-  const [captureLog,    setCaptureLog]    = useState<{title:string;time:string}[]>([]);
+  const [aiLearnLog,    setAiLearnLog]    = useState<{from:string;to:string;title:string}[]>([]);
 
   const chatEndRef=useRef<HTMLDivElement>(null);
   const aiEndRef  =useRef<HTMLDivElement>(null);
@@ -496,6 +634,7 @@ export default function QCapsuleDemo(){
   useEffect(()=>{const fn=()=>{setCtxMenu(null);setAiCtxMenu(null);};window.addEventListener("click",fn);return()=>window.removeEventListener("click",fn);},[]);
   useEffect(()=>{setSelectMode(false);setSelMsgIds(new Set());},[activeChat]);
 
+  // 演示栏拖动
   useEffect(()=>{
     if(!demoBarDrag)return;
     const onMove=(e:MouseEvent)=>{
@@ -511,13 +650,6 @@ export default function QCapsuleDemo(){
 
   const showToast=(msg:string,color="#52C41A")=>{setToast({msg,color});setTimeout(()=>setToast(null),2800);};
 
-  // 计算AI推荐的提醒风格（响应次数最多的）
-  const aiRecommendedStyleIdx = (() => {
-    const entries = Object.entries(reminderStyleCounts) as [string,number][];
-    return parseInt(entries.sort((a,b)=>b[1]-a[1])[0][0]);
-  })();
-  const totalStyleUses = Object.values(reminderStyleCounts).reduce((s,v)=>s+v,0);
-
   const handleSelectChat=(id:number)=>{
     setActiveChat(id);setUnreadMap(prev=>({...prev,[id]:0}));
     if(aiChatId!==id)setAiVisible(false);
@@ -530,9 +662,10 @@ export default function QCapsuleDemo(){
       setTimeout(()=>{
         const sum=AI_SUM[chatId]||`📋 **对话总结**\n\n基于「${CHATS.find(c=>c.id===chatId)?.name}」的内容分析。`;
         setAiMessages([{role:"ai",content:sum}]);setAiLoading(false);
+        // 重庆出行后，开启监控提示
         if(chatId===13&&!travelMonitor){
           setTimeout(()=>{
-            setAiMessages(p=>[...p,{role:"ai",content:"✨ **出行监控已开启**\n\n我会持续跟踪以下信息：\n✈️ 航班状态（MU5435 / MU5436）\n🏨 酒店预订动态\n🌤️ 重庆天气变化\n\n一旦有变更，我会立即生成代办通知你。点击聊天中的航班卡片可查看实时状态。"}]);
+            setAiMessages(p=>[...p,{role:"ai",content:"✨ **出行监控已开启**\n\n我会持续跟踪以下信息：\n✈️ 航班状态（MU5435 / MU5436）\n🏨 酒店预订动态\n🌤️ 重庆天气变化\n🎫 景点开放/限流情况\n\n一旦有变更（延误、改签、天气预警等），我会立即生成代办通知你。点击聊天中的航班卡片可查看实时状态。"}]);
             setTravelMonitor(true);
           },1500);
         }
@@ -575,12 +708,12 @@ export default function QCapsuleDemo(){
 
   const toggleSelectMode=()=>{setSelectMode(p=>!p);setSelMsgIds(new Set());};
   const toggleMsgSel=(id:number)=>setSelMsgIds(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
-
   const MULTI_CTX:Record<number,string>={
     13:"这是我和小美讨论重庆出行的对话。请帮我总结：1.出行时间和方式 2.航班和酒店信息 3.行程建议",
     20:"这是我和策划部的活动方案讨论。请帮我总结",
     21:"这是我和室友的矛盾对话。请客观分析",
     3:"这是我和师兄的私聊。请帮我总结",
+    10:"这是我和队友的项目沟通。请帮我总结",
   };
   const handleMultiAI=()=>{
     const msgs=(messages[activeChat]||[]).filter(m=>selMsgIds.has(m.id)&&!m.isSystem);
@@ -612,10 +745,7 @@ export default function QCapsuleDemo(){
     };
     setCapsules(p=>[cap,...p]);setNewCapIds(p=>[cap.id,...p]);setFlyingCap(cap.id);setRightTab("capsule");
     setTimeout(()=>setFlyingCap(null),800);
-    // AI学习：记录手动抓取
-    const now=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
-    setCaptureLog(p=>[{title:cap.title.slice(0,20),time:now},...p].slice(0,10));
-    showToast(isSensitive?"⚫ 敏感信息已加密抓取，需密码 666 解锁":sched?"🟡 内容已抓取为代办，Q仔已记录你的抓取习惯":"🔵 已提取为参考代办",isSensitive?"#8C8C8C":sched?"#FA8C16":"#3B82F6");
+    showToast(isSensitive?"⚫ 敏感信息已加密抓取，需密码 666 解锁":sched?"🟡 内容已抓取为代办":"🔵 已提取为参考代办",isSensitive?"#8C8C8C":sched?"#FA8C16":"#3B82F6");
   };
   const handleEnterSel=(msg:Message,cid:number)=>{
     setCtxMenu(null);
@@ -642,15 +772,19 @@ export default function QCapsuleDemo(){
   };
   const deleteEv=(id:number)=>{setSchedule(p=>p.filter(e=>e.id!==id));showToast("🗑️ 日程已删除","#8C8C8C");};
 
+  // ── 导入处理 ─────────────────────────────────────────────
   const handleImport=(method:string)=>{
-    setImportMethod(method);setImportStep("loading");
+    setImportMethod(method);
+    setImportStep("loading");
     setTimeout(()=>{
       setImportStep("done");
+      // 模拟导入：补充几个已有课程
       const importedEvs:ScheduleEvent[]=[
-        {id:Date.now()+1,date:"2026-04-29",startTime:"08:00",endTime:"09:50",title:"📥 数据库原理",   location:"逸A-301",type:"class",color:"#E8EAF6",priority:"medium"},
-        {id:Date.now()+2,date:"2026-04-30",startTime:"08:00",endTime:"09:50",title:"📥 软件工程",     location:"逸A-205",type:"class",color:"#E8EAF6",priority:"medium"},
-        {id:Date.now()+3,date:"2026-05-04",startTime:"10:10",endTime:"12:00",title:"📥 编译原理",     location:"逸B-108",type:"class",color:"#E8EAF6",priority:"medium"},
-        {id:Date.now()+4,date:"2026-05-05",startTime:"14:00",endTime:"15:50",title:"📥 人工智能导论", location:"逸C-202",type:"class",color:"#E8EAF6",priority:"medium"},
+        {id:Date.now()+1, date:"2026-04-29",startTime:"08:00",endTime:"09:50",title:"📥 数据库原理",     location:"逸A-301",  type:"class",color:"#E8EAF6",priority:"medium"},
+        {id:Date.now()+2, date:"2026-04-30",startTime:"08:00",endTime:"09:50",title:"📥 软件工程",       location:"逸A-205",  type:"class",color:"#E8EAF6",priority:"medium"},
+        {id:Date.now()+3, date:"2026-05-04",startTime:"10:10",endTime:"12:00",title:"📥 编译原理",       location:"逸B-108",  type:"class",color:"#E8EAF6",priority:"medium"},
+        {id:Date.now()+4, date:"2026-05-05",startTime:"14:00",endTime:"15:50",title:"📥 人工智能导论",   location:"逸C-202",  type:"class",color:"#E8EAF6",priority:"medium"},
+        {id:Date.now()+5, date:"2026-05-06",startTime:"08:00",endTime:"09:50",title:"📥 数据库原理",     location:"逸A-301",  type:"class",color:"#E8EAF6",priority:"medium"},
       ];
       setSchedule(p=>[...p,...importedEvs]);
       showToast(`✅ 通过${method}成功导入 ${importedEvs.length} 节课程`,"#52C41A");
@@ -665,7 +799,11 @@ export default function QCapsuleDemo(){
       const nid=Date.now();
       const ev:ScheduleEvent={id:nid,date:cap.scheduleData.date||TODAY,startTime:cap.scheduleData.startTime||"09:00",endTime:cap.scheduleData.endTime||"10:00",title:cap.scheduleData.title||cap.title,location:cap.scheduleData.location,type:cap.scheduleData.type||"task",color:cap.scheduleData.color||"#FFE7BA",priority:cap.scheduleData.priority||"medium",fromCapsule:true,groupName:cap.group,flightNo:cap.scheduleData.flightNo};
       setSchedule(p=>{
-        if(cap.flightNo){const filtered=p.filter(e=>e.flightNo!==cap.flightNo);return [...filtered,ev];}
+        // 如果是航班相关，先移除原航班记录再加入新的
+        if(cap.flightNo){
+          const filtered=p.filter(e=>e.flightNo!==cap.flightNo);
+          return [...filtered,ev];
+        }
         const ex=p.some(e=>e.title===ev.title&&e.date===ev.date);
         return ex?p:[...p,ev];
       });
@@ -683,7 +821,7 @@ export default function QCapsuleDemo(){
     setTimeout(()=>{
       const cap:Capsule={id:Date.now(),type:"pending",importance:"high",group:"计算机网络 · 课程群",title:"📎 作业补充要求",content:"学习通也要交！5/6 23:59 截止，不接受补交",time:"22:05",from:"张老师",new:true,createdAt:TODAY,scheduleData:{date:"2026-05-06",startTime:"23:00",endTime:"23:59",title:"📎 计网作业截止",type:"task",color:"#FFE7BA",priority:"high"}};
       setCapsules(p=>[cap,...p]);setNewCapIds(p=>[cap.id,...p]);setFlyingCap(cap.id);setRightTab("capsule");
-      setTimeout(()=>setFlyingCap(null),800);showToast("🟡 新代办已捕获（Q仔识别：张老师本学期第3次DDL提醒，紧迫度↑）","#FA8C16");
+      setTimeout(()=>setFlyingCap(null),800);showToast("🟡 新代办已捕获","#FA8C16");
     },1100);
   };
   const simConflict=()=>{
@@ -710,13 +848,11 @@ export default function QCapsuleDemo(){
         };
         setCapsules(p=>[cap,...p]);setNewCapIds(p=>[cap.id,...p]);setFlyingCap(cap.id);setRightTab("capsule");
         setTimeout(()=>setFlyingCap(null),800);
-        const now=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
-        setCaptureLog(p=>[{title:"账号密码·张师兄",time:now},...p].slice(0,10));
         showToast("⚫ 敏感信息已加密抓取，点击代办输入密码 666 解锁","#8C8C8C");
-      }
+      } else showToast("💡 请右键消息选择「抓取此内容」","#8C8C8C");
     },600);
   };
-
+  
   const captureAIContent=(content:string)=>{
     setAiCtxMenu(null);
     const cap:Capsule={
@@ -732,7 +868,6 @@ export default function QCapsuleDemo(){
     setTimeout(()=>setFlyingCap(null),800);
     showToast("🔵 AI总结已抓取为方案参考","#3B82F6");
   };
-
   const simReminder=()=>{
     setRightTab("schedule");
     setSchDate("2026-05-06");
@@ -744,11 +879,8 @@ export default function QCapsuleDemo(){
       setSentReminder(false);
       setReminderTimeOpt("3h");
       setReminderCustomT("21:00");
-      // AI预选风格
-      setSelStyle(aiRecommendedStyleIdx);
     },350);
   };
-
   const simGroupSched=(chatId:number)=>{
     setActiveChat(chatId);setUnreadMap(p=>({...p,[chatId]:0}));
     setTimeout(()=>{
@@ -759,14 +891,17 @@ export default function QCapsuleDemo(){
       },1200);
     },600);
   };
-
+  // 出行讨论：跳转到小美聊天
   const simTravel=()=>{
     setActiveChat(13);setUnreadMap(p=>({...p,13:0}));
     setTimeout(()=>showToast("💡 选中航班相关消息，点击「AI总结」可开启出行监控","#13C2C2"),500);
   };
 
+  // 模拟航班延误推送（点击航班卡片后）
   const handleFlightDelay=()=>{
+    const flight=FLIGHTS["MU5435"];
     setFlightModal("MU5435");
+    // 同时生成代办
     setTimeout(()=>{
       const exists=capsules.some(c=>c.flightNo==="MU5435");
       if(!exists){
@@ -799,14 +934,6 @@ export default function QCapsuleDemo(){
   const totalUnread=(Object.values(unreadMap) as number[]).reduce((s:number,v:number)=>s+v,0);
   const filteredCaps=filterCaps(capsules,capFilter);
   const remStyles=reminderEv?getReminderStyles(reminderEv):[];
-
-  // 所有学习记录（合并）
-  const allLearnLog = [
-    ...PROFILE_DATA.initialLearned.map(l=>({title:l,from:"",to:"",time:"历史"})),
-    ...aiLearnLog.map(l=>({title:`「${l.title.slice(0,12)}」优先级 ${l.from}→${l.to}`,from:l.from,to:l.to,time:l.time})),
-    ...captureLog.map(l=>({title:`手动抓取「${l.title}」`,from:"",to:"",time:l.time})),
-  ].slice(0,12);
-
   return (
     <div style={{display:"flex",height:"100vh",width:"100vw",background:"#F0F2F5",fontFamily:"'PingFang SC','Microsoft YaHei',sans-serif",overflow:"hidden",position:"relative",color:"#333"}}>
 
@@ -831,41 +958,52 @@ export default function QCapsuleDemo(){
         <div onClick={e=>e.stopPropagation()} style={{position:"fixed",left:ctxMenu.x,top:ctxMenu.y,background:"#fff",border:"1px solid #E5E8EE",borderRadius:8,boxShadow:"0 8px 24px rgba(0,0,0,0.14)",zIndex:9998,minWidth:165,overflow:"hidden"}}>
           {CHATS.find(c=>c.id===ctxMenu.cid)?.type==="private"&&(
             <>
-              <div onClick={()=>handleEnterSel(ctxMenu.msg,ctxMenu.cid)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>☑️ 进入多选</div>
+              <div onClick={()=>handleEnterSel(ctxMenu.msg,ctxMenu.cid)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+                ☑️ 进入多选
+              </div>
               <div style={{height:1,background:"#F0F0F0"}}/>
             </>
           )}
-          <div onClick={()=>handleAIMsg(ctxMenu.msg,ctxMenu.cid)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>✨ AI总结此消息</div>
+          <div onClick={()=>handleAIMsg(ctxMenu.msg,ctxMenu.cid)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+            ✨ AI总结此消息
+          </div>
           <div style={{height:1,background:"#F0F0F0"}}/>
-          <div onClick={()=>handleDDL(ctxMenu.msg,ctxMenu.cid)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>📎 抓取此内容</div>
+          <div onClick={()=>handleDDL(ctxMenu.msg,ctxMenu.cid)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+            📎 抓取此内容
+          </div>
           <div style={{height:1,background:"#F0F0F0"}}/>
-          <div onClick={()=>{navigator.clipboard?.writeText(ctxMenu.msg.content).catch(()=>{});setCtxMenu(null);}} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,color:"#666",display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>📋 复制文本</div>
+          <div onClick={()=>{navigator.clipboard?.writeText(ctxMenu.msg.content).catch(()=>{});setCtxMenu(null);}} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,color:"#666",display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+            📋 复制文本
+          </div>
         </div>
-      )}
-      {aiCtxMenu&&(
+      )
+      }
+{/* AI消息右键菜单 */}
+{aiCtxMenu&&(
         <div onClick={e=>e.stopPropagation()} style={{position:"fixed",left:aiCtxMenu.x,top:aiCtxMenu.y,background:"#fff",border:"1px solid #E5E8EE",borderRadius:8,boxShadow:"0 8px 24px rgba(0,0,0,0.14)",zIndex:9998,minWidth:160,overflow:"hidden"}}>
-          <div onClick={()=>captureAIContent(aiCtxMenu.content)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>🔵 抓取为方案参考</div>
+          <div onClick={()=>captureAIContent(aiCtxMenu.content)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+            🔵 抓取为方案参考
+          </div>
           <div style={{height:1,background:"#F0F0F0"}}/>
-          <div onClick={()=>{navigator.clipboard?.writeText(aiCtxMenu.content).catch(()=>{});setAiCtxMenu(null);}} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,color:"#666"}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>📋 复制文本</div>
+          <div onClick={()=>{navigator.clipboard?.writeText(aiCtxMenu.content).catch(()=>{});setAiCtxMenu(null);}} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,color:"#666",display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+            📋 复制文本
+          </div>
         </div>
       )}
 
       {/* 左侧导航条 */}
       <div style={{width:56,background:"linear-gradient(180deg,#2D3138 0%,#1F2329 100%)",display:"flex",flexDirection:"column",alignItems:"center",paddingTop:16,gap:4}}>
         <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff",marginBottom:12,border:"2px solid #fff"}}>小A</div>
-        {([{icon:"💬",badge:totalUnread as number,active:true},{icon:"👥"},{icon:"📁"},{icon:"🎮"},{icon:"📅"}] as {icon:string;badge?:number;active?:boolean}[]).map((item,i)=>(
+        {([
+          {icon:"💬",badge:totalUnread as number,active:true},
+          {icon:"👥"},{icon:"📁"},{icon:"🎮"},{icon:"📅"},
+        ] as {icon:string;badge?:number;active?:boolean}[]).map((item,i)=>(
           <div key={i} style={{position:"relative",width:40,height:40,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",background:item.active?"rgba(74,144,217,0.2)":"transparent",color:item.active?"#4A90D9":"#9DA1A6"}}>
             {item.icon}
             {item.badge&&item.badge>0?<div style={{position:"absolute",top:-2,right:-2,background:"#FF4D4F",color:"#fff",fontSize:9,fontWeight:700,padding:"1px 5px",borderRadius:8,minWidth:16,textAlign:"center"}}>{item.badge>99?"99+":item.badge}</div>:null}
           </div>
         ))}
         <div style={{flex:1}}/>
-        {/* Q仔学习状态指示 */}
-        <div style={{marginBottom:6,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          {aiLearnLog.length>0&&(
-            <div style={{width:8,height:8,borderRadius:"50%",background:"#52C41A",boxShadow:"0 0 6px #52C41A"}} title="Q仔正在学习中"/>
-          )}
-        </div>
         <div style={{width:36,height:36,borderRadius:8,background:"linear-gradient(135deg,#4A90D9,#9B59B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff",marginBottom:12}}>Q</div>
       </div>
 
@@ -958,6 +1096,7 @@ export default function QCapsuleDemo(){
             const prev=(messages[activeChat]||[])[idx-1];
             const showDate=msg.date&&(!prev||prev.date!==msg.date);
             const isSelected=selMsgIds.has(msg.id);
+            // 识别航班消息（id=15 in chat 13）
             const isFlightMsg=activeChat===13&&msg.id===15;
             if(msg.isSystem)return(
               <div key={msg.id}>
@@ -970,6 +1109,7 @@ export default function QCapsuleDemo(){
                 {showDate&&<div style={{textAlign:"center",margin:"16px 0 12px",fontSize:11,color:"#999"}}><span style={{background:"#E5E8EE",padding:"3px 12px",borderRadius:10}}>{msg.date}</span></div>}
                 <div style={{display:"flex",flexDirection:"row",alignItems:"flex-start",gap:8,marginBottom:10,background:isSelected?"rgba(74,144,217,0.08)":"transparent",borderRadius:8,padding:isSelected?"4px 6px":"0",cursor:selectMode?"pointer":"default",justifyContent:msg.self?"flex-end":"flex-start"}}
                   onClick={selectMode?()=>toggleMsgSel(msg.id):undefined}>
+                  {/* 多选圆圈：永远在最左侧 */}
                   {selectMode&&isPrivate&&(
                     <div style={{display:"flex",alignItems:"center",flexShrink:0,marginTop:10}}>
                       <div style={{width:18,height:18,borderRadius:"50%",border:`2px solid ${isSelected?"#4A90D9":"#ccc"}`,background:isSelected?"#4A90D9":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -977,7 +1117,7 @@ export default function QCapsuleDemo(){
                       </div>
                     </div>
                   )}
-                  <div style={{display:"flex",flexDirection:msg.self?"row-reverse":"row",alignItems:"flex-start",gap:8,maxWidth:"100%"}}>
+                  <div style={{display:"flex",flexDirection:msg.self?"row-reverse":"row",alignItems:"flex-start",gap:8,flex:selectMode&&isPrivate?"none":undefined,maxWidth:selectMode&&isPrivate?"calc(100% - 30px)":"100%"}}>
                     <div style={{width:36,height:36,borderRadius:6,flexShrink:0,background:msg.isAI?"linear-gradient(135deg,#4A90D9,#9B59B6)":msg.self?"linear-gradient(135deg,#4A90D9,#7B68EE)":`hsl(${(msg.sender.charCodeAt(0)*17)%360},60%,60%)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>
                       {msg.isAI?"Q":msg.self?"我":msg.sender.slice(0,1)}
                     </div>
@@ -1038,7 +1178,7 @@ export default function QCapsuleDemo(){
                     {sharedMode&&<span style={{fontSize:10,background:"#7B68EE",color:"#fff",padding:"1px 6px",borderRadius:8,fontWeight:600}}>🤝 协作中</span>}
                     {aiChatId===13&&travelMonitor&&<span style={{fontSize:10,background:"#13C2C2",color:"#fff",padding:"1px 6px",borderRadius:8,fontWeight:600}}>🛬 监控中</span>}
                   </div>
-                  <div style={{fontSize:10,color:"#999"}}>基于「{CHATS.find(c=>c.id===aiChatId)?.name}」</div>
+                  <div style={{fontSize:10,color:"#999"}}>基于「{CHATS.find(c=>c.id===aiChatId)?.name}」{sharedMode&&` · 与 ${sharedMode.partnerName} 共同查看`}</div>
                 </div>
               </div>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>
@@ -1048,6 +1188,7 @@ export default function QCapsuleDemo(){
                 <button onClick={()=>{setAiVisible(false);setSharedMode(null);}} style={{fontSize:18,color:"#999",cursor:"pointer",background:"none",border:"none",padding:"0 4px"}}>×</button>
               </div>
             </div>
+
             <div style={{flex:1,overflowY:"auto",padding:"12px 14px",display:"flex",flexDirection:"column",gap:10,minHeight:0}}>
               {aiMessages.map((msg,i)=>{
                 const isPartner=msg.role==="partner";
@@ -1076,13 +1217,15 @@ export default function QCapsuleDemo(){
               )}
               <div ref={aiEndRef}/>
             </div>
+
             <div style={{padding:"8px 14px",borderTop:"1px solid #F0F0F0",flexShrink:0}}>
               <div style={{fontSize:10.5,color:"#999",marginBottom:7}}>{aiMessages.length<=1?"快速提问":"继续追问"}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                 {(
-                  aiChatId===13?["航班实时状态✈️","重庆游玩推荐🌶️","出行准备清单"]:
+                  aiChatId===13?["航班实时状态✈️","重庆游玩推荐🌶️","酒店信息🏨","出行准备清单"]:
                   aiChatId===20?["互动游戏怎么设计🎮","经费分配合理吗💰"]:
                   aiChatId===21?["谁的做法正确⚖️","如何化解冲突🤝"]:
+                  aiChatId===18?["最佳团建时间📅","活动内容建议🎉"]:
                   aiChatId===4?["作业要求📝","DDL汇总⏰"]:
                   ["有哪些DDL⏰","总结待办📝"]
                 ).map((q,i)=>(
@@ -1090,6 +1233,7 @@ export default function QCapsuleDemo(){
                 ))}
               </div>
             </div>
+
             <div style={{padding:"10px 12px",borderTop:"1px solid #F0F0F0",display:"flex",gap:6,flexShrink:0}}>
               <input value={aiInput} onChange={e=>setAiInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&aiInput.trim())sendAI();}} placeholder={sharedMode?`和 ${sharedMode.partnerName} 一起问 Q仔…`:"问问Q仔"} style={{flex:1,height:32,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:12,outline:"none",color:"#333"}}/>
               <button onClick={()=>sendAI()} style={{padding:"0 12px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>发送</button>
@@ -1099,23 +1243,15 @@ export default function QCapsuleDemo(){
 
         {!aiVisible&&(
           <>
-            {/* ── 4个Tab ── */}
-            <div style={{display:"flex",borderBottom:"1px solid #E5E5E5",background:"#FAFBFD",flexShrink:0,overflowX:"auto"}}>
-              {([
-                {key:"schedule", label:"📅 日程",  count:0},
-                {key:"capsule",  label:"📋 代办",  count:pendingCount},
-                {key:"priority", label:"🎯 优先级",count:0},
-                {key:"profile",  label:"👤 了解你",count:aiLearnLog.length},
-              ] as {key:string;label:string;count:number}[]).map(tab=>(
-                <button key={tab.key} onClick={()=>setRightTab(tab.key as "schedule"|"capsule"|"priority"|"profile")}
-                  style={{flex:1,padding:"10px 4px",border:"none",background:rightTab===tab.key?"#fff":"transparent",color:rightTab===tab.key?"#4A90D9":"#666",fontSize:11.5,fontWeight:rightTab===tab.key?700:500,cursor:"pointer",borderBottom:rightTab===tab.key?"2px solid #4A90D9":"2px solid transparent",display:"flex",alignItems:"center",justifyContent:"center",gap:4,whiteSpace:"nowrap"}}>
-                  {tab.label}
-                  {tab.count>0&&<span style={{background:rightTab===tab.key?"#4A90D9":tab.key==="profile"?"#52C41A":"#FA8C16",color:"#fff",fontSize:9,fontWeight:700,padding:"1px 5px",borderRadius:8}}>{tab.count}</span>}
+            <div style={{display:"flex",borderBottom:"1px solid #E5E5E5",background:"#FAFBFD",flexShrink:0}}>
+              {([{key:"schedule",label:"📅 日程",count:0},{key:"capsule",label:"📋 代办",count:pendingCount},{key:"priority",label:"🎯 优先级",count:0}] as {key:string;label:string;count:number}[]).map(tab=>(
+                <button key={tab.key} onClick={()=>setRightTab(tab.key as "schedule"|"capsule"|"priority")} style={{flex:1,padding:"12px",border:"none",background:rightTab===tab.key?"#fff":"transparent",color:rightTab===tab.key?"#4A90D9":"#666",fontSize:12.5,fontWeight:rightTab===tab.key?700:500,cursor:"pointer",borderBottom:rightTab===tab.key?"2px solid #4A90D9":"2px solid transparent",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  {tab.label}{tab.count>0&&<span style={{background:rightTab===tab.key?"#4A90D9":"#FA8C16",color:"#fff",fontSize:10,fontWeight:700,padding:"1px 6px",borderRadius:8}}>{tab.count}</span>}
                 </button>
               ))}
             </div>
 
-            {/* ── 日程面板 ── */}
+            {/* 日程面板 */}
             {rightTab==="schedule"&&(
               <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
                 <div style={{padding:"10px 12px",background:"linear-gradient(135deg,#F5F0FF 0%,#FFF0F5 100%)",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
@@ -1124,7 +1260,9 @@ export default function QCapsuleDemo(){
                     <button onClick={()=>setWeekStart(addDays(weekStart,-7))} style={{border:"none",background:"transparent",cursor:"pointer",color:"#666",fontSize:16,padding:"0 4px"}}>◀</button>
                     <div style={{flex:1,display:"flex",gap:3}}>
                       {weekDays.map(d=>{
-                        const hasEv=eventDates.has(d);const isToday=d===TODAY;const isSel=d===schDate;
+                        const hasEv=eventDates.has(d);
+                        const isToday=d===TODAY;
+                        const isSel=d===schDate;
                         return(
                           <div key={d} onClick={()=>setSchDate(d)} style={{flex:1,textAlign:"center",padding:"4px 2px",borderRadius:6,background:isSel?"#4A90D9":isToday?"#E8F0FE":"transparent",cursor:"pointer",border:isToday&&!isSel?"1px solid #4A90D9":"1px solid transparent"}}>
                             <div style={{fontSize:10,color:isSel?"#fff":isToday?"#4A90D9":"#999"}}>{getDayName(d)}</div>
@@ -1148,9 +1286,10 @@ export default function QCapsuleDemo(){
                   {dayEvs.length===0?(
                     <div style={{padding:30,textAlign:"center",color:"#bbb",fontSize:13}}>暂无日程 🐟<br/><span style={{fontSize:11}}>点击「+ 添加」或「📥 导入」</span></div>
                   ):dayEvs.map(ev=>{
-                    const pc=prColor(ev.priority);const isHL=highlightId===ev.id;
+                    const pc=prColor(ev.priority);
+                    const isHL=highlightId===ev.id;
                     return(
-                      <div key={ev.id} onClick={()=>{setReminderEv(ev);setSentReminder(false);setReminderTimeOpt("3h");setReminderCustomT("21:00");setSelStyle(aiRecommendedStyleIdx);}}
+                      <div key={ev.id} onClick={()=>{setReminderEv(ev);setSentReminder(false);setReminderTimeOpt("3h");setReminderCustomT("21:00");}}
                         style={{display:"flex",gap:8,padding:"9px 11px",background:ev.color,borderRadius:9,border:isHL?`2px solid ${pc}`:"1px solid rgba(0,0,0,0.06)",cursor:"pointer",transition:"all 0.3s",transform:isHL?"scale(1.02)":"scale(1)",boxShadow:isHL?`0 0 0 3px ${pc}33,0 4px 14px rgba(0,0,0,0.1)`:undefined}}>
                         <div style={{width:4,borderRadius:2,background:pc,flexShrink:0}}/>
                         <div style={{flex:1,minWidth:0}}>
@@ -1173,16 +1312,16 @@ export default function QCapsuleDemo(){
               </div>
             )}
 
-            {/* ── 代办面板 ── */}
+            {/* 代办面板 */}
             {rightTab==="capsule"&&(
               <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
                 <div style={{padding:"8px 12px",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
-                    {(["all","week","event","conflict","confirmed","info"] as CapsuleFilter[]).map(f=>{
+                  {(["all","week","event","conflict","confirmed","info"] as CapsuleFilter[]).map(f=>{
                       const labels:Record<string,string>={all:"全部",week:"近一周",event:"📌 事件",conflict:"⚠️ 冲突",confirmed:"✅ 已确认",info:"🔵 信息"};
                       return <button key={f} onClick={()=>setCapFilter(f)} style={{padding:"3px 8px",borderRadius:8,border:"1px solid "+(capFilter===f?"#4A90D9":"#E5E8EE"),background:capFilter===f?"#E8F0FE":"transparent",color:capFilter===f?"#4A90D9":"#666",fontSize:11,fontWeight:capFilter===f?700:400,cursor:"pointer"}}>{labels[f]}</button>;
                     })}
-                    <button onClick={()=>setShowLegend(!showLegend)} style={{marginLeft:"auto",padding:"3px 8px",borderRadius:8,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:11,cursor:"pointer"}}>❓</button>
+                    <button onClick={()=>setShowLegend(!showLegend)} style={{marginLeft:"auto",padding:"3px 8px",borderRadius:8,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:11,cursor:"pointer"}}>❓ 图例</button>
                   </div>
                   {showLegend&&(
                     <div style={{background:"#FAFBFD",border:"1px solid #E5E8EE",borderRadius:8,padding:"8px 10px",marginTop:4}}>
@@ -1199,7 +1338,6 @@ export default function QCapsuleDemo(){
                     const st=getCS(cap);
                     const isNew=newCapIds.includes(cap.id);
                     const isFlying=flyingCap===cap.id;
-                    const teacherProfile=TEACHER_PROFILES[cap.from];
                     return(
                       <div key={cap.id} style={{background:st.bg,border:`1.5px solid ${st.border}`,borderRadius:12,padding:"10px 12px",transition:"all 0.4s cubic-bezier(0.34,1.56,0.64,1)",transform:isFlying?"scale(1.04)":"scale(1)",boxShadow:isNew?`0 0 0 2px ${st.border}66,0 4px 14px ${st.border}44`:"0 1px 4px rgba(0,0,0,0.05)"}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
@@ -1207,45 +1345,32 @@ export default function QCapsuleDemo(){
                           <span style={{fontSize:12.5,fontWeight:700,color:"#1a1a2e",flex:1}}>{cap.title}</span>
                           <span style={{fontSize:10,fontWeight:600,color:st.badge,background:st.badge+"22",padding:"1px 7px",borderRadius:8}}>{st.label}</span>
                         </div>
-                        <div style={{fontSize:11.5,color:"#3a3a5c",lineHeight:1.55,marginBottom:6,whiteSpace:"pre-line"}}>
-                          {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)
-                            ?<span style={{color:"#8C8C8C",fontFamily:"monospace"}}>账号：****　密码：****</span>
-                            :unlockedCaps.has(cap.id)&&cap.rawContent?cap.rawContent:cap.content}
-                        </div>
-                        {/* ── 老师画像标签（AI洞察） ── */}
-                        {teacherProfile&&(
-                          <div style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 8px",borderRadius:8,background:`${teacherProfile.color}12`,border:`1px solid ${teacherProfile.color}33`,marginBottom:7}}>
-                            <span style={{fontSize:10}}>{teacherProfile.icon}</span>
-                            <span style={{fontSize:10,color:teacherProfile.color,fontWeight:600}}>{cap.from}：{teacherProfile.label}</span>
-                          </div>
-                        )}
-                        {/* ── AI捕获分析说明 ── */}
-                        {(cap.type==="pending"||cap.type==="conflict")&&(
-                          <div style={{fontSize:10,color:"#8B9ABF",marginBottom:7,fontStyle:"italic",lineHeight:1.4,background:"#F8F9FF",padding:"4px 8px",borderRadius:6,border:"1px solid #E8EEFA"}}>
-                            🤖 Q仔判断依据：{getAiReason(cap.title,"重要",cap.from)}
-                          </div>
-                        )}
-                        <div style={{fontSize:10,color:"#999",marginBottom:8}}>📍 {cap.group} · {cap.from} · {cap.time}</div>
-                        {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)&&(
-                          <button onClick={()=>{setSensitiveCapId(cap.id);setSensitiveInput("");}} style={{width:"100%",padding:"5px 0",borderRadius:6,border:"none",background:"#8C8C8C",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",marginBottom:6}}>
-                            🔓 查看详情（需验证密码）
-                          </button>
-                        )}
-                        {cap.type!=="confirmed"&&cap.type!=="sensitive"&&(
-                          <div style={{display:"flex",gap:6}}>
-                            <button onClick={()=>confirmCap(cap.id)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:st.badge,color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                              ✓ {cap.scheduleData?"确认入日程":"确认"}
-                            </button>
-                            <button onClick={()=>dismissCap(cap.id)} style={{padding:"5px 10px",borderRadius:6,border:`1px solid ${st.border}`,background:"transparent",color:"#999",fontSize:11,cursor:"pointer"}}>✗</button>
-                          </div>
-                        )}
-                        {cap.type==="sensitive"&&unlockedCaps.has(cap.id)&&(
-                          <div style={{display:"flex",gap:6}}>
-                            <button onClick={()=>confirmCap(cap.id)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:st.badge,color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>✓ 确认</button>
-                            <button onClick={()=>dismissCap(cap.id)} style={{padding:"5px 10px",borderRadius:6,border:`1px solid ${st.border}`,background:"transparent",color:"#999",fontSize:11,cursor:"pointer"}}>✗</button>
-                          </div>
-                        )}
-                        {cap.type==="confirmed"&&<div style={{fontSize:11,color:"#52C41A",fontWeight:600}}>✓ 已加入日程</div>}
+                        <div style={{fontSize:11.5,color:"#3a3a5c",lineHeight:1.55,marginBottom:8,whiteSpace:"pre-line"}}>
+          {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)
+            ?<span style={{color:"#8C8C8C",fontFamily:"monospace"}}>账号：****　密码：****</span>
+            :unlockedCaps.has(cap.id)&&cap.rawContent?cap.rawContent:cap.content}
+        </div>
+        <div style={{fontSize:10,color:"#999",marginBottom:8}}>📍 {cap.group} · {cap.from} · {cap.time}</div>
+        {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)&&(
+          <button onClick={()=>{setSensitiveCapId(cap.id);setSensitiveInput("");}} style={{width:"100%",padding:"5px 0",borderRadius:6,border:"none",background:"#8C8C8C",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",marginBottom:6}}>
+            🔓 查看详情（需验证密码）
+          </button>
+        )}
+        {cap.type!=="confirmed"&&cap.type!=="sensitive"&&(
+          <div style={{display:"flex",gap:6}}>
+            <button onClick={()=>confirmCap(cap.id)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:st.badge,color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+              ✓ {cap.scheduleData?"确认入日程":"确认"}
+            </button>
+            <button onClick={()=>dismissCap(cap.id)} style={{padding:"5px 10px",borderRadius:6,border:`1px solid ${st.border}`,background:"transparent",color:"#999",fontSize:11,cursor:"pointer"}}>✗</button>
+          </div>
+        )}
+        {cap.type==="sensitive"&&unlockedCaps.has(cap.id)&&(
+          <div style={{display:"flex",gap:6}}>
+            <button onClick={()=>confirmCap(cap.id)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:st.badge,color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>✓ 确认</button>
+            <button onClick={()=>dismissCap(cap.id)} style={{padding:"5px 10px",borderRadius:6,border:`1px solid ${st.border}`,background:"transparent",color:"#999",fontSize:11,cursor:"pointer"}}>✗</button>
+          </div>
+        )}
+        {cap.type==="confirmed"&&<div style={{fontSize:11,color:"#52C41A",fontWeight:600}}>✓ 已加入日程</div>}
                       </div>
                     );
                   })}
@@ -1253,35 +1378,35 @@ export default function QCapsuleDemo(){
               </div>
             )}
 
-            {/* ── 优先级面板（增强版）── */}
+            {/* 优先级面板 */}
             {rightTab==="priority"&&(
               <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
                 <div style={{padding:"10px 12px",background:"linear-gradient(135deg,#FFF7E6,#FFF0F5)",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <div>
-                      <div style={{fontSize:13,fontWeight:700,color:"#333",marginBottom:2}}>🎯 智能优先级排序</div>
-                      <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginTop:2}}>
-                        <div style={{fontSize:11,color:"#999"}}>AI综合判断</div>
-                        {aiLearnLog.length>0&&(
-                          <span style={{fontSize:10,color:"#7B68EE",background:"#F3E5F5",padding:"1px 6px",borderRadius:8,fontWeight:600,display:"flex",alignItems:"center",gap:3}}>
-                            <span style={{width:5,height:5,borderRadius:"50%",background:"#52C41A",display:"inline-block"}}/>
-                            Q仔已学习 {aiLearnLog.length} 次偏好
-                          </span>
-                        )}
+                    <div style={{fontSize:13,fontWeight:700,color:"#333",marginBottom:2}}>🎯 智能优先级</div>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginTop:2}}>
+                        <div style={{fontSize:11,color:"#999"}}>按重要程度排序</div>
+                        {aiLearnLog.length>0&&<span style={{fontSize:10,color:"#7B68EE",background:"#F3E5F5",padding:"1px 6px",borderRadius:8,fontWeight:600}}>✨ Q仔已学习 {aiLearnLog.length} 次</span>}
                       </div>
+                      {aiLearnLog.length>=2&&(
+                        <div style={{marginTop:6,background:"#F3E5F5",border:"1px solid #D3B8E0",borderRadius:8,padding:"6px 10px",fontSize:10.5,color:"#7B68EE",lineHeight:1.5}}>
+                          💡 Q仔发现：你倾向于将「{aiLearnLog[aiLearnLog.length-1].title.slice(0,10)}」类事项调为{aiLearnLog[aiLearnLog.length-1].to}
+                        </div>
+                      )}
                     </div>
                     <button onClick={()=>setShowPriorityLegend(!showPriorityLegend)} style={{padding:"3px 8px",borderRadius:8,border:"1px solid #E5E8EE",background:"#fff",color:"#666",fontSize:11,cursor:"pointer"}}>❓ 图例</button>
                   </div>
-                  {/* AI学到的偏好摘要 */}
-                  {aiLearnLog.length>=2&&(
-                    <div style={{marginTop:8,background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1px solid #D3B8E0",borderRadius:8,padding:"6px 10px",fontSize:10.5,color:"#7B68EE",lineHeight:1.5}}>
-                      💡 Q仔学习到：你倾向于将「{aiLearnLog[aiLearnLog.length-1].title.slice(0,10)}」类事项调为
-                      <strong> {aiLearnLog[aiLearnLog.length-1].to}</strong>，下次同类任务将自动参考此偏好。
-                    </div>
-                  )}
                   {showPriorityLegend&&(
                     <div style={{background:"#fff",border:"1px solid #E5E8EE",borderRadius:8,padding:"10px 12px",marginTop:8}}>
-                      {[{e:"🔴",l:"紧急",d:"时间冲突或3天内截止"},{e:"🟠",l:"重要",d:"一周内截止"},{e:"🟡",l:"一般",d:"普通待办"},{e:"🟢",l:"已确认",d:"已写入日程"},{e:"🔵",l:"方案参考",d:"规划信息"},{e:"⚫",l:"敏感",d:"隐私保护"}].map(({e,l,d})=>(
+                      {[
+                        {e:"🔴",l:"紧急",d:"时间冲突或3天内截止"},
+                        {e:"🟠",l:"重要",d:"一周内截止"},
+                        {e:"🟡",l:"一般",d:"普通待办"},
+                        {e:"🟢",l:"已确认",d:"已写入日程"},
+                        {e:"🔵",l:"方案参考",d:"规划信息"},
+                        {e:"⚫",l:"敏感",d:"隐私保护"},
+                      ].map(({e,l,d})=>(
                         <div key={l} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,fontSize:11.5}}>
                           <span style={{fontSize:13}}>{e}</span>
                           <span style={{fontWeight:700,color:"#333",width:60}}>{l}</span>
@@ -1295,19 +1420,20 @@ export default function QCapsuleDemo(){
                   {(()=>{
                     type PItem={id:string;emoji:string;level:string;color:string;title:string;desc:string};
                     const items:PItem[]=[];
-                    const t3="2026-05-02";const t7="2026-05-07";
+                    const t3="2026-05-02";
+                    const t7="2026-05-07";
                     const skipTitles=["国家安全","近现代史","数据结构实验课","操作系统","数据库原理","软件工程","编译原理","人工智能导论"];
                     capsules.forEach(c=>{
                       const dd=c.scheduleData?.date||"";
-                      if(c.type==="conflict")      items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
-                      else if(c.type==="sensitive") items.push({id:`c${c.id}`,emoji:"⚫",level:"敏感",  color:"#8C8C8C",title:c.title,desc:"隐私信息已加密保护"});
-                      else if(c.type==="travel")   items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
-                      else if(c.type==="plan")     items.push({id:`c${c.id}`,emoji:"🔵",level:"方案参考",color:"#3B82F6",title:c.title,desc:c.content.slice(0,55)});
+                      if(c.type==="conflict")     items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
+                      else if(c.type==="sensitive")items.push({id:`c${c.id}`,emoji:"⚫",level:"敏感",  color:"#8C8C8C",title:c.title,desc:"隐私信息已加密保护"});
+                      else if(c.type==="travel")  items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
+                      else if(c.type==="plan")    items.push({id:`c${c.id}`,emoji:"🔵",level:"方案参考",color:"#3B82F6",title:c.title,desc:c.content.slice(0,55)});
                       else if(c.type==="confirmed")items.push({id:`c${c.id}`,emoji:"🟢",level:"已确认",color:"#52C41A",title:c.title,desc:"已写入日程"});
                       else if(c.importance==="high")items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
-                      else if(dd&&dd<=t3)          items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
-                      else if(dd&&dd<=t7)          items.push({id:`c${c.id}`,emoji:"🟠",level:"重要",  color:"#FA8C16",title:c.title,desc:c.content.slice(0,55)});
-                      else                         items.push({id:`c${c.id}`,emoji:"🟡",level:"一般",  color:"#FAAD14",title:c.title,desc:c.content.slice(0,55)});
+                      else if(dd&&dd<=t3)         items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
+                      else if(dd&&dd<=t7)         items.push({id:`c${c.id}`,emoji:"🟠",level:"重要",  color:"#FA8C16",title:c.title,desc:c.content.slice(0,55)});
+                      else                        items.push({id:`c${c.id}`,emoji:"🟡",level:"一般",  color:"#FAAD14",title:c.title,desc:c.content.slice(0,55)});
                     });
                     schedule.filter(ev=>!skipTitles.some(s=>ev.title.includes(s))).forEach(ev=>{
                       const isLow=["团建","讲座","出游","志愿"].some(k=>ev.title.includes(k));
@@ -1320,32 +1446,31 @@ export default function QCapsuleDemo(){
                     });
                     const ord:Record<string,number>={紧急:0,敏感:1,重要:2,一般:3,方案参考:4,已确认:5};
                     const colorMap2:Record<string,string>={紧急:"#FF4D4F",重要:"#FA8C16",一般:"#FAAD14",方案参考:"#3B82F6",已确认:"#52C41A",敏感:"#8C8C8C"};
-                    const emojiMap2:Record<string,string>={紧急:"🔴",重要:"🟠",一般:"🟡",方案参考:"🔵",已确认:"🟢",敏感:"⚫"};
-                    items.forEach(it=>{if(priorityOverrides[it.id]){it.level=priorityOverrides[it.id];it.color=colorMap2[it.level]||it.color;it.emoji=emojiMap2[it.level]||it.emoji;}});
+                    const emojiMap:Record<string,string>={紧急:"🔴",重要:"🟠",一般:"🟡",方案参考:"🔵",已确认:"🟢",敏感:"⚫"};
+                    // 应用用户手动覆盖
+                    items.forEach(it=>{if(priorityOverrides[it.id]){it.level=priorityOverrides[it.id];it.color=colorMap2[it.level]||it.color;it.emoji=emojiMap[it.level]||it.emoji;}});
                     const seen=new Set<string>();
                     return items.sort((a,b)=>(ord[a.level]??9)-(ord[b.level]??9)).filter(p=>{if(seen.has(p.title))return false;seen.add(p.title);return true;}).map(item=>{
                       const done=priorityDone.has(item.id);
-                      const reason=getAiReason(item.title,item.level);
                       return(
-                        <div key={item.id} style={{background:`${item.color}10`,border:`1.5px solid ${item.color}44`,borderRadius:10,padding:"9px 12px",display:"flex",alignItems:"flex-start",gap:8,opacity:done?0.4:1,transition:"opacity 0.3s"}}>
+                        <div key={item.id} style={{background:`${item.color}11`,border:`1.5px solid ${item.color}44`,borderRadius:10,padding:"9px 12px",display:"flex",alignItems:"flex-start",gap:8,opacity:done?0.4:1,transition:"opacity 0.3s"}}>
                           <span style={{fontSize:15,lineHeight:1.3,flexShrink:0}}>{item.emoji}</span>
                           <div style={{flex:1,minWidth:0}}>
                             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                               <span style={{fontSize:12.5,fontWeight:700,color:"#1a1a2e",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textDecoration:done?"line-through":"none"}}>{item.title}</span>
                               <span style={{fontSize:10,fontWeight:600,color:item.color,background:`${item.color}22`,padding:"1px 7px",borderRadius:8,flexShrink:0}}>{item.level}</span>
                             </div>
-                            <div style={{fontSize:11,color:"#666",lineHeight:1.4,marginBottom:4}}>{item.desc}</div>
-                            {/* ── AI推理说明（核心AI原生展示）── */}
-                            <div style={{fontSize:10,color:"#8B9ABF",lineHeight:1.4,fontStyle:"italic",background:"#F8F9FF",padding:"3px 8px",borderRadius:5,border:"1px solid #E8EEFA"}}>
-                              🤖 {reason}
-                            </div>
+                            <div style={{fontSize:11,color:"#666",lineHeight:1.4}}>{item.desc}</div>
                           </div>
                           <div style={{display:"flex",flexDirection:"column",gap:3,flexShrink:0}}>
                             <button onClick={()=>setEditingPItem({id:item.id,title:item.title,level:priorityOverrides[item.id]||item.level,desc:item.desc})} style={{width:22,height:22,borderRadius:5,border:"1px solid #d0d0d0",background:"#fff",color:"#666",fontSize:10,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✏️</button>
                             <button onClick={()=>{
                               const was=priorityDone.has(item.id);
                               setPriorityDone(p=>{const n=new Set(p);was?n.delete(item.id):n.add(item.id);return n;});
-                              if(!was&&(item.title.includes("计网")||item.title.includes("第三章"))){setAlertBanner(false);showToast("✅ 已确认完成，提醒已清除","#52C41A");}
+                              if(!was&&(item.title.includes("计网")||item.title.includes("第三章"))){
+                                setAlertBanner(false);
+                                showToast("✅ 已确认完成，提醒已清除","#52C41A");
+                              }
                             }} style={{width:22,height:22,borderRadius:"50%",border:`2px solid ${done?"#52C41A":"#d9d9d9"}`,background:done?"#52C41A":"transparent",color:"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>
                               {done?"✓":""}
                             </button>
@@ -1357,119 +1482,11 @@ export default function QCapsuleDemo(){
                 </div>
               </div>
             )}
-
-            {/* ── 👤 Q仔了解你（新面板）── */}
-            {rightTab==="profile"&&(
-              <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
-                <div style={{padding:"10px 12px",background:"linear-gradient(135deg,#F3E5F5 0%,#E8F0FE 100%)",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
-                  <div style={{fontSize:13,fontWeight:800,color:"#7B68EE",marginBottom:2}}>🧠 Q仔对你的了解</div>
-                  <div style={{fontSize:11,color:"#888"}}>基于近7天的真实交互行为，持续更新中</div>
-                  {aiLearnLog.length>0&&(
-                    <div style={{marginTop:6,display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{width:7,height:7,borderRadius:"50%",background:"#52C41A",display:"inline-block",boxShadow:"0 0 6px #52C41A"}}/>
-                      <span style={{fontSize:10.5,color:"#52C41A",fontWeight:600}}>本次会话新增 {aiLearnLog.length} 条学习记录</span>
-                    </div>
-                  )}
-                </div>
-                <div style={{flex:1,overflowY:"auto",padding:"10px 12px",display:"flex",flexDirection:"column",gap:10,minHeight:0}}>
-
-                  {/* 任务优先偏好 */}
-                  <div style={{background:"#FFF9F0",border:"1px solid #FFD591",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#FA8C16",marginBottom:8}}>🎯 你的任务优先偏好</div>
-                    {PROFILE_DATA.taskPref.map((t,i)=>(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
-                        <div style={{fontSize:11,color:"#333",width:64,flexShrink:0,fontWeight:i===0?700:400}}>{t.label}</div>
-                        <div style={{flex:1,height:14,background:"#FFE7BA",borderRadius:7,overflow:"hidden"}}>
-                          <div style={{height:"100%",width:`${(t.stars/5)*100}%`,background:`linear-gradient(90deg,#FA8C16,#FFB340)`,borderRadius:7,transition:"width 0.8s ease"}}/>
-                        </div>
-                        <div style={{fontSize:9,color:"#FA8C16",fontWeight:700,flexShrink:0}}>{"★".repeat(t.stars)+"☆".repeat(5-t.stars)}</div>
-                      </div>
-                    ))}
-                    <div style={{fontSize:10,color:"#999",marginTop:4,fontStyle:"italic"}}>🤖 Q仔通过你过去的确认/忽略行为推断</div>
-                  </div>
-
-                  {/* 日常习惯 */}
-                  <div style={{background:"#F0F9FF",border:"1px solid #BAE0FF",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#4A90D9",marginBottom:8}}>⏰ 你的处理习惯</div>
-                    {PROFILE_DATA.habits.map((h,i)=>(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
-                        <span style={{width:5,height:5,borderRadius:"50%",background:"#4A90D9",display:"inline-block",flexShrink:0}}/>
-                        <span style={{fontSize:11.5,color:"#333"}}>{h}</span>
-                      </div>
-                    ))}
-                    <div style={{fontSize:10,color:"#999",marginTop:4,fontStyle:"italic"}}>🤖 Q仔通过你的确认时间规律推断</div>
-                  </div>
-
-                  {/* 老师风格识别 */}
-                  <div style={{background:"#F9F0FF",border:"1px solid #D3ADF7",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#9B59B6",marginBottom:8}}>👩‍🏫 老师风格画像</div>
-                    {PROFILE_DATA.teacherStyles.map((t,i)=>(
-                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:8,padding:"6px 8px",background:`${t.color}10`,borderRadius:7,border:`1px solid ${t.color}33`}}>
-                        <div style={{flex:1}}>
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                            <span style={{fontSize:11.5,fontWeight:700,color:t.color}}>{t.name}</span>
-                            <span style={{fontSize:9,padding:"1px 5px",borderRadius:6,background:t.color,color:"#fff",fontWeight:600}}>{t.tag}</span>
-                          </div>
-                          <div style={{fontSize:10.5,color:"#555"}}>{t.detail}</div>
-                        </div>
-                      </div>
-                    ))}
-                    <div style={{fontSize:10,color:"#999",fontStyle:"italic"}}>🤖 Q仔通过群聊消息频率与措辞分析推断</div>
-                  </div>
-
-                  {/* 提醒风格偏好 */}
-                  <div style={{background:"#F6FFED",border:"1px solid #95DE64",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#52C41A",marginBottom:8}}>💬 你的提醒偏好</div>
-                    <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
-                      {["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"].map((s,i)=>{
-                        const cnt=reminderStyleCounts[i]||0;
-                        const isRec=i===aiRecommendedStyleIdx;
-                        return(
-                          <div key={i} style={{flex:"1 0 40%",padding:"5px 8px",borderRadius:8,background:isRec?"#52C41A":"#F5F5F5",border:`1.5px solid ${isRec?"#52C41A":"#d9d9d9"}`}}>
-                            <div style={{fontSize:10.5,fontWeight:isRec?700:400,color:isRec?"#fff":"#333"}}>{s}{isRec&&" ⭐"}</div>
-                            <div style={{fontSize:10,color:isRec?"rgba(255,255,255,0.8)":"#999",marginTop:1}}>使用 {cnt} 次</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div style={{fontSize:10.5,color:"#52C41A",fontWeight:600}}>
-                      🤖 Q仔推荐：「{["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"][aiRecommendedStyleIdx]}」（响应率最高，{reminderStyleCounts[aiRecommendedStyleIdx]}/{totalStyleUses}次）
-                    </div>
-                  </div>
-
-                  {/* Q仔本周建议 */}
-                  <div style={{background:"linear-gradient(135deg,#FFF7E6,#FFF0F5)",border:"1px solid #FFB340",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#FA8C16",marginBottom:6}}>💡 Q仔本周建议</div>
-                    <div style={{fontSize:12,color:"#333",lineHeight:1.6}}>{PROFILE_DATA.suggestion}</div>
-                    <button onClick={()=>setShowCrossAnalysis(true)} style={{marginTop:8,padding:"5px 12px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#FA8C16,#FFB340)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                      查看跨群详细分析 →
-                    </button>
-                  </div>
-
-                  {/* Q仔学习记录 */}
-                  <div style={{background:"#FAFBFD",border:"1px solid #E5E8EE",borderRadius:10,padding:"10px 12px"}}>
-                    <div style={{fontSize:12,fontWeight:700,color:"#666",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
-                      📝 Q仔学习记录
-                      {aiLearnLog.length>0&&<span style={{fontSize:9,background:"#52C41A",color:"#fff",padding:"1px 5px",borderRadius:6}}>+{aiLearnLog.length} 新</span>}
-                    </div>
-                    {allLearnLog.length===0&&<div style={{fontSize:11,color:"#bbb",textAlign:"center",padding:"10px 0"}}>暂无学习记录，开始使用Q仔后自动记录</div>}
-                    {allLearnLog.slice(0,8).map((l,i)=>(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:5,padding:"3px 0",borderBottom:i<allLearnLog.length-1?"1px dashed #F0F0F0":"none"}}>
-                        <span style={{fontSize:11,color:"#52C41A",flexShrink:0}}>✓</span>
-                        <span style={{fontSize:11,color:"#555",flex:1}}>{l.title}</span>
-                        <span style={{fontSize:10,color:"#bbb",flexShrink:0}}>{l.time}</span>
-                      </div>
-                    ))}
-                    <div style={{fontSize:10,color:"#bbb",marginTop:6,textAlign:"center"}}>每次你确认/调整/忽略代办，Q仔都会记录并学习</div>
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         )}
       </div>
 
-      {/* ── 演示按钮（可拖动）── */}
+      {/* 演示按钮（可拖动）*/}
       <div style={{position:"fixed",left:demoBarPos.x,bottom:demoBarPos.y,background:"rgba(255,255,255,0.97)",border:"1px solid #E5E5E5",borderRadius:18,padding:"8px 14px",display:"flex",flexDirection:"column",gap:6,alignItems:"stretch",boxShadow:"0 8px 32px rgba(0,0,0,0.12)",zIndex:1000,userSelect:"none"}}>
         <div onMouseDown={e=>setDemoBarDrag({startX:e.clientX,startY:e.clientY,origX:demoBarPos.x,origY:demoBarPos.y})}
           style={{cursor:demoBarDrag?"grabbing":"grab",alignSelf:"center",padding:"4px 6px",fontSize:14,color:"#999"}}>🎮</div>
@@ -1490,12 +1507,8 @@ export default function QCapsuleDemo(){
             {label:"矛盾化解",action:()=>{setActiveChat(21);setUnreadMap(p=>({...p,21:0}));}},
             {label:"出行讨论",action:simTravel},
           ]},
-          {module:"🧠 AI 洞察",color:MODULE_COLORS.insight,btns:[
-            {label:"Q仔画像",action:()=>{setRightTab("profile");setAiVisible(false);showToast("👤 已切换到「Q仔了解你」面板","#9B59B6");}},
-            {label:"跨群分析",action:()=>setShowCrossAnalysis(true)},
-          ]},
         ] as {module:string;color:string;btns:{label:string;action:()=>void}[]}[]).map(({module,color,btns})=>(
-          <div key={module} style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
+<div key={module} style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
             <span style={{fontSize:10,color:"#888",fontWeight:600,width:72,flexShrink:0}}>{module}</span>
             <div style={{display:"flex",gap:4}}>
               {btns.map(btn=>(
@@ -1511,11 +1524,12 @@ export default function QCapsuleDemo(){
         {reminderConfig&&<div style={{background:"#52C41A",color:"#fff",fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:8,whiteSpace:"nowrap",boxShadow:"0 2px 8px rgba(0,0,0,0.15)"}}>提醒已设定 {reminderConfig.sendTime}</div>}
         <button onClick={()=>{
           if(timeJumped)return;
-          const rc=reminderConfig||{styleIdx:aiRecommendedStyleIdx,sendTime:"21:00",evId:7,evTitle:"📎 计网作业截止"};
+          const rc=reminderConfig||{styleIdx:0,sendTime:"21:00",evId:7,evTitle:"📎 计网作业截止"};
           const ev=schedule.find(e=>e.id===rc.evId)||schedule.find(e=>e.title.includes("计网"))||null;
           const styleNames=["温柔学姐","毒舌室友","佛系朋友","正经班委"];
-          const sname=styleNames[rc.styleIdx]||"毒舌室友";
-          const styleText=ev?(getReminderStyles(ev)[rc.styleIdx]?.text||`提醒：「${rc.evTitle}」今日截止！`):`亲爱的，「${rc.evTitle}」截止今日 23:59，记得提前提交！`;
+          const sname=styleNames[rc.styleIdx]||"温柔学姐";
+          const styleText=ev?(getReminderStyles(ev)[rc.styleIdx]?.text||`提醒：「${rc.evTitle}」今日截止！`):`亲爱的，「${rc.evTitle}」截止今日 23:59，记得提前提交，加油你可以的！🌸`;
+          // 把计网作业升级为紧急
           setCapsules(p=>p.map(c=>{
             if(c.title.includes("计网作业")||c.title.includes("第三章作业")||c.title.includes("作业补充要求")){
               return {...c,importance:"high" as Priority,scheduleData:c.scheduleData?{...c.scheduleData,priority:"high" as Priority,color:"#FFF1F0"}:undefined};
@@ -1526,10 +1540,12 @@ export default function QCapsuleDemo(){
             if(s.title.includes("计网作业")) return {...s,priority:"high" as Priority,color:"#FFF1F0"};
             return s;
           }));
-          setTimeJumped(true);setActiveChat(9);setUnreadMap(p=>({...p,9:0}));
+          setTimeJumped(true);
+          setActiveChat(9);
+          setUnreadMap(p=>({...p,9:0}));
           showToast(`⏩ 时间快进至 5月6日 ${rc.sendTime}`,"#7B68EE");
           setTimeout(()=>{
-            const nm:Message={id:Date.now(),sender:"Q仔",isAI:true,content:`⏰【自动提醒 · ${sname}风】\n\n${styleText}\n\n──\n📅 发送时间：5月6日 ${rc.sendTime}（截止前3小时）\n🤖 提醒风格由 Q仔 根据你的响应历史自动选择`,time:rc.sendTime,self:false,date:"5月6日 周三"};
+            const nm:Message={id:Date.now(),sender:"Q仔",isAI:true,content:`⏰【自动提醒 · ${sname}风】\n\n${styleText}\n\n──\n📅 发送时间：5月6日 ${rc.sendTime}（截止前3小时）`,time:rc.sendTime,self:false,date:"5月6日 周三"};
             setMessages(p=>({...p,9:[...(p[9]||[]),nm]}));
             setAlertBanner(true);
           },600);
@@ -1540,7 +1556,7 @@ export default function QCapsuleDemo(){
         <div style={{fontSize:9,color:"#999",textAlign:"center",lineHeight:1.3}}>快进至<br/>5月6日</div>
       </div>
 
-      {/* ── 弹窗：添加/编辑日程 ── */}
+      {/* 弹窗：添加/编辑日程 */}
       {showEvModal&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setShowEvModal(false)}>
           <div style={{background:"#fff",borderRadius:16,padding:"24px",width:400,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
@@ -1555,13 +1571,19 @@ export default function QCapsuleDemo(){
               <div style={{flex:1}}>
                 <div style={{fontSize:12,color:"#666",marginBottom:4}}>类型</div>
                 <select value={evForm.type} onChange={e=>setEvForm(p=>({...p,type:e.target.value as ScheduleEvent["type"]}))} style={{width:"100%",height:34,padding:"0 8px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333"}}>
-                  <option value="class">课程</option><option value="task">任务/DDL</option><option value="event">活动</option><option value="exam">考试/答辩</option><option value="travel">出行</option>
+                  <option value="class">课程</option>
+                  <option value="task">任务/DDL</option>
+                  <option value="event">活动</option>
+                  <option value="exam">考试/答辩</option>
+                  <option value="travel">出行</option>
                 </select>
               </div>
               <div style={{flex:1}}>
                 <div style={{fontSize:12,color:"#666",marginBottom:4}}>优先级</div>
                 <select value={evForm.priority} onChange={e=>setEvForm(p=>({...p,priority:e.target.value as Priority}))} style={{width:"100%",height:34,padding:"0 8px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333"}}>
-                  <option value="high">🔴 紧急</option><option value="medium">🟠 重要</option><option value="low">🟡 一般</option>
+                  <option value="high">🔴 紧急</option>
+                  <option value="medium">🟠 重要</option>
+                  <option value="low">🟡 一般</option>
                 </select>
               </div>
             </div>
@@ -1573,7 +1595,7 @@ export default function QCapsuleDemo(){
         </div>
       )}
 
-      {/* ── 弹窗：导入日程 ── */}
+      {/* 弹窗：导入日程 */}
       {showImportModal&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setShowImportModal(false)}>
           <div style={{background:"#fff",borderRadius:16,padding:"24px",width:440,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
@@ -1582,7 +1604,12 @@ export default function QCapsuleDemo(){
             {importStep==="choose"&&(
               <>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-                  {[{icon:"🖼️",label:"图片识别",desc:"上传课表截图\nAI 识别课程",color:"#4A90D9"},{icon:"📄",label:"PDF / Word",desc:"上传课表文件\n自动解析",color:"#FA8C16"},{icon:"🏫",label:"教务系统",desc:"账号密码登录\n直接同步",color:"#52C41A"},{icon:"📆",label:"日程表",desc:"iCal/日历同步\n一键导入",color:"#9B59B6"}].map(opt=>(
+                  {[
+                    {icon:"🖼️",label:"图片识别",desc:"上传课表截图\nAI 识别课程",color:"#4A90D9"},
+                    {icon:"📄",label:"PDF / Word",desc:"上传课表文件\n自动解析",color:"#FA8C16"},
+                    {icon:"🏫",label:"教务系统",desc:"账号密码登录\n直接同步",color:"#52C41A"},
+                    {icon:"📆",label:"日程表",desc:"iCal/日历同步\n一键导入",color:"#9B59B6"},
+                  ].map(opt=>(
                     <button key={opt.label} onClick={()=>handleImport(opt.label)} style={{padding:"14px 12px",borderRadius:10,border:`1.5px solid ${opt.color}55`,background:`${opt.color}10`,color:"#333",cursor:"pointer",textAlign:"left"}}>
                       <div style={{fontSize:24,marginBottom:4}}>{opt.icon}</div>
                       <div style={{fontSize:13,fontWeight:700,color:opt.color,marginBottom:3}}>{opt.label}</div>
@@ -1590,7 +1617,7 @@ export default function QCapsuleDemo(){
                     </button>
                   ))}
                 </div>
-                <div style={{fontSize:11,color:"#bbb",textAlign:"center"}}>⚠️ 演示用途，点击任意方式模拟导入流程</div>
+                <div style={{fontSize:11,color:"#bbb",textAlign:"center"}}>⚠️ 仅演示用途，点击任意方式模拟导入流程</div>
               </>
             )}
             {importStep==="loading"&&(
@@ -1604,7 +1631,7 @@ export default function QCapsuleDemo(){
               <div style={{padding:"20px 0",textAlign:"center"}}>
                 <div style={{fontSize:38,marginBottom:10}}>✅</div>
                 <div style={{fontSize:14,fontWeight:700,color:"#52C41A",marginBottom:6}}>导入成功！</div>
-                <div style={{fontSize:11.5,color:"#666",marginBottom:18}}>已通过 {importMethod} 导入 4 节课程到日程表</div>
+                <div style={{fontSize:11.5,color:"#666",marginBottom:18}}>已通过 {importMethod} 导入 5 节课程到日程表</div>
                 <button onClick={()=>setShowImportModal(false)} style={{padding:"10px 32px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#52C41A,#73D13D)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>查看日程</button>
               </div>
             )}
@@ -1612,35 +1639,71 @@ export default function QCapsuleDemo(){
         </div>
       )}
 
-      {/* ── 弹窗：智能提醒（增强版 · AI预选）── */}
+      {/* 弹窗：航班实时状态 */}
+      {flightModal&&FLIGHTS[flightModal]&&(()=>{
+        const f=FLIGHTS[flightModal];
+        const isDelay=f.status==="延误";
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3500}} onClick={()=>setFlightModal(null)}>
+            <div style={{background:"#fff",borderRadius:16,padding:"24px",width:420,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+                <span style={{fontSize:24}}>✈️</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:18,fontWeight:800,color:"#333"}}>{f.flightNo}</div>
+                  <div style={{fontSize:11,color:"#999"}}>东方航空 · 实时状态</div>
+                </div>
+                <span style={{fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:8,background:isDelay?"#FFF1F0":"#F6FFED",color:isDelay?"#FF4D4F":"#52C41A"}}>{f.status}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",margin:"18px 0",padding:"14px",background:"#FAFBFD",borderRadius:10}}>
+                <div style={{textAlign:"center",flex:1}}>
+                  <div style={{fontSize:18,fontWeight:800,color:"#333"}}>{f.sTime}</div>
+                  <div style={{fontSize:11,color:"#666",marginTop:3}}>{f.from}</div>
+                </div>
+                <div style={{flex:1,padding:"0 8px",textAlign:"center"}}>
+                  <div style={{fontSize:10,color:"#999",marginBottom:4}}>飞行约 2h25min</div>
+                  <div style={{height:1,background:isDelay?"#FF4D4F":"#52C41A",position:"relative"}}>
+                    <span style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:14}}>{isDelay?"⚠️":"✈️"}</span>
+                  </div>
+                </div>
+                <div style={{textAlign:"center",flex:1}}>
+                  <div style={{fontSize:18,fontWeight:800,color:"#333"}}>{f.eTime}</div>
+                  <div style={{fontSize:11,color:"#666",marginTop:3}}>{f.to}</div>
+                </div>
+              </div>
+              {isDelay&&(
+                <div style={{background:"#FFF1F0",border:"1.5px solid #FFA39E",borderRadius:10,padding:"10px 12px",marginBottom:14}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"#FF4D4F",marginBottom:4}}>⚠️ 航班变更通知</div>
+                  <div style={{fontSize:12,color:"#666",lineHeight:1.6}}>{f.delay}</div>
+                </div>
+              )}
+              <div style={{fontSize:11.5,color:"#666",lineHeight:1.8,marginBottom:14}}>
+                <div>🚪 登机口：{f.gate}</div>
+                <div>📅 日期：2026年5月10日（周六）</div>
+                <div>🎫 座位：23A / 23B（已选）</div>
+              </div>
+              <div style={{background:"#E6F7FF",border:"1px solid #91D5FF",borderRadius:10,padding:"10px 12px",marginBottom:14}}>
+                <div style={{fontSize:12,color:"#1890FF",fontWeight:600,marginBottom:3}}>🤖 Q仔出行监控</div>
+                <div style={{fontSize:11,color:"#666",lineHeight:1.5}}>{isDelay?"已检测到延误，已生成代办通知，可在右侧代办栏处理":"航班正常，将持续监控"}</div>
+              </div>
+              <button onClick={()=>{setFlightModal(null);setRightTab("capsule");}} style={{width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>查看代办 →</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 弹窗：提醒文案 */}
       {reminderEv&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000}} onClick={()=>{setReminderEv(null);setSentReminder(false);}}>
-          <div style={{background:"#fff",borderRadius:16,padding:"26px",width:440,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:"#fff",borderRadius:16,padding:"26px",width:420,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:15,fontWeight:800,color:"#333",marginBottom:4}}>💬 生成提醒文案</div>
-            <div style={{fontSize:12,color:"#4A90D9",background:"#EFF6FF",padding:"6px 10px",borderRadius:8,marginBottom:10,fontWeight:500}}>
+            <div style={{fontSize:12,color:"#4A90D9",background:"#EFF6FF",padding:"6px 10px",borderRadius:8,marginBottom:14,fontWeight:500}}>
               针对：{reminderEv.title}　{reminderEv.date.slice(5).replace("-","/")} {reminderEv.startTime}
               <span style={{marginLeft:8,fontSize:10,color:prColor(reminderEv.priority),fontWeight:700}}>{reminderEv.priority==="high"?"🔴 紧急":reminderEv.priority==="medium"?"🟠 重要":"🟡 一般"}</span>
             </div>
-            {/* ── AI 预选推荐横幅（核心改动）── */}
-            <div style={{background:"linear-gradient(135deg,#F0F7FF,#F3E5F5)",border:"1.5px solid #BAE0FF",borderRadius:10,padding:"8px 12px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}>
-              <div style={{width:22,height:22,borderRadius:6,background:"linear-gradient(135deg,#4A90D9,#9B59B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>Q</div>
-              <div>
-                <div style={{fontSize:11.5,fontWeight:700,color:"#4A90D9",marginBottom:2}}>🤖 Q仔智能推荐</div>
-                <div style={{fontSize:11,color:"#555",lineHeight:1.5}}>
-                  根据你过去 {totalStyleUses} 次提醒记录，「<strong style={{color:"#7B68EE"}}>
-                    {["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"][aiRecommendedStyleIdx]}
-                  </strong>」风格响应率最高（{reminderStyleCounts[aiRecommendedStyleIdx]}/{totalStyleUses}次），已为你预选。
-                </div>
-              </div>
-            </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
               {remStyles.map((s,i)=>(
-                <button key={i} onClick={()=>{
-                  setSelStyle(i);
-                  setReminderStyleCounts(p=>({...p,[i]:(p[i]||0)+1}));
-                }} style={{padding:"5px 10px",borderRadius:10,border:`1.5px solid ${selStyle===i?"#4A90D9":"#E5E8EE"}`,background:selStyle===i?"#E8F0FE":"#fff",color:selStyle===i?"#4A90D9":"#666",fontSize:11.5,cursor:"pointer",fontWeight:selStyle===i?700:400,position:"relative"}}>
+                <button key={i} onClick={()=>setSelStyle(i)} style={{padding:"5px 10px",borderRadius:10,border:`1.5px solid ${selStyle===i?"#4A90D9":"#E5E8EE"}`,background:selStyle===i?"#E8F0FE":"#fff",color:selStyle===i?"#4A90D9":"#666",fontSize:11.5,cursor:"pointer",fontWeight:selStyle===i?700:400}}>
                   {s.icon} {s.label}
-                  {i===aiRecommendedStyleIdx&&<span style={{position:"absolute",top:-6,right:-6,fontSize:9,background:"#7B68EE",color:"#fff",padding:"1px 4px",borderRadius:6,fontWeight:700}}>AI荐</span>}
                 </button>
               ))}
             </div>
@@ -1669,400 +1732,144 @@ export default function QCapsuleDemo(){
                 const st=computeSendTime(reminderTimeOpt,reminderCustomT,reminderEv!);
                 setReminderConfig({styleIdx:selStyle,sendTime:st,evId:reminderEv!.id,evTitle:reminderEv!.title});
                 setSentReminder(true);
-                // 记录到学习日志
-                const styleNames=["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"];
-                // ═══════════════════════════════════════════════════════════════
-// 续接处：上一段代码末尾是：
-//   setAiLearnLog(p=>[...p,{from:"",to:styleNames[selStyle],title:"提醒风格选择",time:new Date
-// 从这里接续：
-// ═══════════════════════════════════════════════════════════════
+              }} style={{width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>一键发送提醒</button>
+            ):(
+              <div style={{textAlign:"center",color:"#52C41A",fontWeight:700,fontSize:14,padding:"10px 0"}}>
+                ✅ 提醒已设定！将于 <span style={{color:"#4A90D9"}}>{reminderConfig?.sendTime}</span> 自动发送
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-setAiLearnLog(p=>[...p,{
-  from:"",
-  to:styleNames[selStyle],
-  title:"提醒风格选择",
-  time:new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"}),
-}]);
-}} style={{width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-一键发送提醒
-</button>
-):(
-<div style={{textAlign:"center",padding:"10px 0"}}>
-<div style={{color:"#52C41A",fontWeight:700,fontSize:14}}>
-  ✅ 提醒已设定！将于 <span style={{color:"#4A90D9"}}>{reminderConfig?.sendTime}</span> 自动发送
-</div>
-{/* AI学习反馈 */}
-<div style={{marginTop:8,background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1px solid #D3B8E0",borderRadius:8,padding:"6px 12px",fontSize:11,color:"#7B68EE",lineHeight:1.5}}>
-  ✨ Q仔已记录：你选择了「{["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"][selStyle]}」，
-  下次同类提醒将优先推荐此风格（已记录 {reminderStyleCounts[selStyle]} 次）
-</div>
-</div>
-)}
-</div>
-</div>
-)}
-
-{/* ── 弹窗：群体排期分析 ── */}
-{groupSchedM&&GROUP_SCHED[groupSchedM.chatId]&&(()=>{
-const data=GROUP_SCHED[groupSchedM.chatId];
-return(
-<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000}} onClick={()=>setGroupSchedM(null)}>
-<div style={{background:"#fff",borderRadius:16,padding:"26px",width:440,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-<div style={{fontSize:16,fontWeight:800,color:"#333",marginBottom:4}}>📊 Q仔 · 群体排期分析</div>
-<div style={{fontSize:12,color:"#999",marginBottom:16}}>「{data.gName}」· 共 {data.total} 人参与统计</div>
-{/* AI推理说明 */}
-<div style={{background:"linear-gradient(135deg,#F0F7FF,#F5F0FF)",border:"1px solid #BAE0FF",borderRadius:10,padding:"8px 12px",marginBottom:14,display:"flex",gap:6,alignItems:"flex-start"}}>
-<div style={{width:20,height:20,borderRadius:5,background:"linear-gradient(135deg,#4A90D9,#9B59B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#fff",flexShrink:0}}>Q</div>
-<div style={{fontSize:10.5,color:"#4A90D9",lineHeight:1.5}}>
-  🤖 Q仔分析了 {data.total} 条时间回复，识别关键约束：小冯5月10日前有项目截止，排除该期；综合参与率与时间分布，推荐最优时段。
-</div>
-</div>
-<div style={{marginBottom:18}}>
-{data.slots.map((s,i)=>(
-  <div key={i} style={{marginBottom:10}}>
-    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-      <span style={{fontSize:12.5,color:"#333",fontWeight:i===0?700:400}}>{i===0?"🏆 ":""}{s.label}</span>
-      <span style={{fontSize:12,fontWeight:700,color:i===0?"#52C41A":"#666"}}>{s.pct}% ({s.count}/{data.total}人)</span>
-    </div>
-    <div style={{height:20,background:"#F5F5F5",borderRadius:10,overflow:"hidden",position:"relative"}}>
-      <div style={{height:"100%",width:`${s.pct}%`,background:i===0?"linear-gradient(90deg,#52C41A,#73D13D)":"linear-gradient(90deg,#4A90D9,#7B68EE)",borderRadius:10,transition:"width 0.8s ease",display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:6}}>
-        {s.pct>25&&<span style={{fontSize:10,color:"#fff",fontWeight:600}}>{s.who.slice(0,15)}</span>}
-      </div>
-    </div>
-  </div>
-))}
-</div>
-<div style={{background:"#F6FFED",border:"1px solid #95DE64",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
-<div style={{fontSize:13,fontWeight:700,color:"#52C41A",marginBottom:4}}>🏆 推荐最佳时间</div>
-<div style={{fontSize:14,fontWeight:800,color:"#333",marginBottom:4}}>{data.best.label}</div>
-<div style={{fontSize:12,color:"#666",marginBottom:4}}>参与率 {data.best.pct}%，{data.total} 人中 {Math.round(data.total*data.best.pct/100)} 人可参与</div>
-<div style={{fontSize:11,color:"#999"}}>{data.note}</div>
-</div>
-<button onClick={()=>{
-const nev:ScheduleEvent={id:Date.now(),date:data.best.date,startTime:data.best.sT,endTime:data.best.eT,title:data.best.title,type:"event",color:data.best.color,priority:"medium"};
-setSchedule(p=>{const ex=p.some(e=>e.title===nev.title&&e.date===nev.date);return ex?p:[...p,nev];});
-setSchDate(data.best.date);setRightTab("schedule");
-const nid=nev.id;
-setTimeout(()=>setHighlightId(nid),200);setTimeout(()=>setHighlightId(null),3000);
-const _cid=groupSchedM.chatId;
-setGroupSchedM(null);
-showToast(`✅ 已写入日程：${data.best.label}`,"#52C41A");
-const _notice:Message={id:Date.now()+200,sender:"Q仔",isAI:true,content:`📅【排期确认通知】\n\n「${data.gName}」活动时间已正式确定！\n\n🕐 时间：${data.best.label}\n📅 日期：${data.best.date}\n👥 参与人数：${data.total} 人中约 ${Math.round(data.total*data.best.pct/100)} 人（${data.best.pct}%）\n📌 ${data.note}\n\n🤖 Q仔已为参与者写入个人日程，请各成员提前安排好行程，准时出席！`,time:"10:49",self:false};
-setMessages((p:Record<number,Message[]>)=>({...p,[_cid]:[...p[_cid],_notice]}));
-}} style={{width:"100%",padding:"11px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#52C41A,#73D13D)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>✓ 确认最佳时间，写入日程并通知群成员</button>
-</div>
-</div>
-);
-})()}
-
-{/* ── 弹窗：航班实时状态 ── */}
-{flightModal&&FLIGHTS[flightModal]&&(()=>{
-const f=FLIGHTS[flightModal];
-const isDelay=f.status==="延误";
-return(
-<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3500}} onClick={()=>setFlightModal(null)}>
-<div style={{background:"#fff",borderRadius:16,padding:"24px",width:420,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
-<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-<span style={{fontSize:24}}>✈️</span>
-<div style={{flex:1}}>
-  <div style={{fontSize:18,fontWeight:800,color:"#333"}}>{f.flightNo}</div>
-  <div style={{fontSize:11,color:"#999"}}>东方航空 · 实时状态</div>
-</div>
-<span style={{fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:8,background:isDelay?"#FFF1F0":"#F6FFED",color:isDelay?"#FF4D4F":"#52C41A"}}>{f.status}</span>
-</div>
-<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",margin:"18px 0",padding:"14px",background:"#FAFBFD",borderRadius:10}}>
-<div style={{textAlign:"center",flex:1}}>
-  <div style={{fontSize:18,fontWeight:800,color:"#333"}}>{f.sTime}</div>
-  <div style={{fontSize:11,color:"#666",marginTop:3}}>{f.from}</div>
-</div>
-<div style={{flex:1,padding:"0 8px",textAlign:"center"}}>
-  <div style={{fontSize:10,color:"#999",marginBottom:4}}>飞行约 2h25min</div>
-  <div style={{height:1,background:isDelay?"#FF4D4F":"#52C41A",position:"relative"}}>
-    <span style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",fontSize:14}}>{isDelay?"⚠️":"✈️"}</span>
-  </div>
-</div>
-<div style={{textAlign:"center",flex:1}}>
-  <div style={{fontSize:18,fontWeight:800,color:"#333"}}>{f.eTime}</div>
-  <div style={{fontSize:11,color:"#666",marginTop:3}}>{f.to}</div>
-</div>
-</div>
-{isDelay&&(
-<div style={{background:"#FFF1F0",border:"1.5px solid #FFA39E",borderRadius:10,padding:"10px 12px",marginBottom:14}}>
-  <div style={{fontSize:13,fontWeight:700,color:"#FF4D4F",marginBottom:4}}>⚠️ 航班变更通知</div>
-  <div style={{fontSize:12,color:"#666",lineHeight:1.6}}>{f.delay}</div>
-</div>
-)}
-<div style={{fontSize:11.5,color:"#666",lineHeight:1.8,marginBottom:14}}>
-<div>🚪 登机口：{f.gate}</div>
-<div>📅 日期：2026年5月10日（周六）</div>
-<div>🎫 座位：23A / 23B（已选）</div>
-</div>
-<div style={{background:"#E6FFFB",border:"1px solid #87E8DE",borderRadius:10,padding:"10px 12px",marginBottom:14}}>
-<div style={{fontSize:12,color:"#13C2C2",fontWeight:700,marginBottom:3}}>🤖 Q仔出行监控说明</div>
-<div style={{fontSize:11,color:"#555",lineHeight:1.5}}>
-  {isDelay
-    ?"Q仔已检测到延误，已自动生成代办通知，建议提前30分钟出发应对变更。"
-    :"航班状态正常，Q仔将每30分钟轮询一次，发现变更立即推送。"}
-</div>
-</div>
-<button onClick={()=>{setFlightModal(null);setRightTab("capsule");}} style={{width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>查看代办 →</button>
-</div>
-</div>
-);
-})()}
-
-{/* ══════════════════════════════════════════════════════
-── 新功能：跨群智能分析弹窗 ──
-展示AI跨信息源整合推理，是普通工具做不到的AI原生能力
-══════════════════════════════════════════════════════ */}
-{showCrossAnalysis&&(
-<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:4000}} onClick={()=>setShowCrossAnalysis(false)}>
-<div style={{background:"#fff",borderRadius:18,padding:"28px",width:500,boxShadow:"0 24px 80px rgba(0,0,0,0.18)",maxHeight:"88vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-{/* 标题 */}
-<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-<div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:700,color:"#fff"}}>Q</div>
-<div>
-<div style={{fontSize:16,fontWeight:800,color:"#333"}}>🔗 Q仔跨群智能分析</div>
-<div style={{fontSize:11,color:"#999"}}>跨越 5 个群聊 · 整合本周全部关键事项</div>
-</div>
-<button onClick={()=>setShowCrossAnalysis(false)} style={{marginLeft:"auto",background:"none",border:"none",fontSize:20,color:"#bbb",cursor:"pointer"}}>×</button>
-</div>
-
-{/* AI推理能力说明 */}
-<div style={{background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1.5px solid #D3B8E0",borderRadius:10,padding:"10px 14px",marginBottom:18}}>
-<div style={{fontSize:11.5,fontWeight:700,color:"#7B68EE",marginBottom:4}}>🤖 这是 AI 才能做到的事</div>
-<div style={{fontSize:11,color:"#555",lineHeight:1.6}}>
-Q仔同时读取了你的 5 个群聊 + 课表 + 代办，发现了以下你自己没有意识到的时间冲突和风险。普通日历只能看到你手动输入的事，Q仔能理解聊天里产生的时间。
-</div>
-</div>
-
-{/* 核心发现：5月6日双线截止 */}
-<div style={{background:"#FFF1F0",border:"2px solid #FF7875",borderRadius:12,padding:"14px 16px",marginBottom:14}}>
-<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-<span style={{fontSize:18}}>🚨</span>
-<div style={{fontSize:14,fontWeight:800,color:"#FF4D4F"}}>高风险日：5月6日（周三）</div>
-</div>
-<div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
-{[
-  {group:"计算机网络 · 课程群", event:"计网作业截止 23:59", priority:"必须", color:"#FF4D4F", teacher:"张老师", note:"从不延期，本学期第3次提醒"},
-  {group:"Team Phoenix · 创新赛", event:"初赛材料提交 23:59", priority:"必须", color:"#FF6B6B", teacher:"队友 周", note:"PPT v3仍有待优化问题"},
-  {group:"操作系统课程群", event:"实验3答辩（次日14:00）", priority:"需提前准备", color:"#FA8C16", teacher:"助教", note:"需要5分钟PPT，10分钟提问"},
-].map((item,i)=>(
-  <div key={i} style={{display:"flex",gap:10,padding:"8px 10px",background:"rgba(255,77,79,0.05)",borderRadius:8,border:`1px solid ${item.color}33`}}>
-    <div style={{width:4,borderRadius:2,background:item.color,flexShrink:0}}/>
-    <div style={{flex:1}}>
-      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-        <span style={{fontSize:12,fontWeight:700,color:"#333"}}>{item.event}</span>
-        <span style={{fontSize:9,background:item.color,color:"#fff",padding:"1px 5px",borderRadius:5,fontWeight:700}}>{item.priority}</span>
-      </div>
-      <div style={{fontSize:10.5,color:"#666"}}>来源：{item.group}</div>
-      <div style={{fontSize:10,color:item.color,fontWeight:600,marginTop:1}}>⚠️ {item.teacher}：{item.note}</div>
-    </div>
-  </div>
-))}
-</div>
-{/* AI时间测算 */}
-<div style={{background:"rgba(255,77,79,0.08)",borderRadius:8,padding:"8px 10px"}}>
-<div style={{fontSize:11.5,fontWeight:700,color:"#FF4D4F",marginBottom:4}}>🤖 Q仔时间测算</div>
-<div style={{fontSize:11,color:"#555",lineHeight:1.6}}>
-  · 本周（4/29–5/6）你有效工作时间约 <strong>28小时</strong><br/>
-  · 课程占用：16小时 | 组会占用：3小时<br/>
-  · 可用于两项截止任务的净时间：约 <strong>4–5小时</strong><br/>
-  · 计网作业（3000字）预计需 3h | 创新赛PPT优化预计需 2h<br/>
-  · <strong style={{color:"#FF4D4F"}}>结论：时间非常紧张，两件事均不能拖到最后一天。</strong>
-</div>
-</div>
-</div>
-
-{/* AI行动建议 */}
-<div style={{background:"#F6FFED",border:"1.5px solid #95DE64",borderRadius:12,padding:"14px 16px",marginBottom:14}}>
-<div style={{fontSize:13,fontWeight:800,color:"#52C41A",marginBottom:10}}>💡 Q仔的行动建议（按优先级）</div>
-{[
-{day:"今晚（4/29）",action:"先完成课题组组会（必须），晚上开始写计网作业框架",color:"#FF4D4F",icon:"🔴"},
-{day:"4/30–5/3",action:"每天1小时写计网作业，五一假期利用好，5/3前完成初稿",color:"#FA8C16",icon:"🟠"},
-{day:"5/4–5/5",action:"创新赛PPT优化，补充商业模式和用户画像，5/5定稿留buffer",color:"#FA8C16",icon:"🟠"},
-{day:"5/6 白天",action:"计网作业最终检查并提交（双平台），下午放松准备操作系统答辩",color:"#52C41A",icon:"🟢"},
-].map((item,i)=>(
-<div key={i} style={{display:"flex",gap:8,marginBottom:8,padding:"6px 0",borderBottom:i<3?"1px dashed #D9F7BE":"none"}}>
-  <span style={{fontSize:13,flexShrink:0}}>{item.icon}</span>
-  <div>
-    <div style={{fontSize:11,fontWeight:700,color:item.color,marginBottom:2}}>{item.day}</div>
-    <div style={{fontSize:11.5,color:"#333",lineHeight:1.4}}>{item.action}</div>
-  </div>
-</div>
-))}
-</div>
-
-{/* 其他本周事项 */}
-<div style={{background:"#FFFBE6",border:"1px solid #FFE58F",borderRadius:10,padding:"10px 14px",marginBottom:14}}>
-<div style={{fontSize:12,fontWeight:700,color:"#FAAD14",marginBottom:8}}>📅 本周其他事项（Q仔已归档）</div>
-{[
-{icon:"🔬",event:"课题组组会 16:30-19:30",date:"今天 4/29",note:"翁老师重视中间数据展示"},
-{icon:"✈️",event:"重庆出行 MU5435（延误监控中）",date:"5/10 周六",note:"航班延误40分钟，已生成代办"},
-{icon:"🎓",event:"班级团建 紫金山徒步",date:"5/18 周日",note:"与创新创业讲座冲突，需取舍"},
-{icon:"🌿",event:"志愿服务 图书馆整理",date:"5/12 周一",note:"已报名，需要8:00到位"},
-].map((item,i)=>(
-<div key={i} style={{display:"flex",gap:6,alignItems:"flex-start",marginBottom:6}}>
-  <span style={{fontSize:13,flexShrink:0}}>{item.icon}</span>
-  <div style={{flex:1}}>
-    <div style={{fontSize:11.5,fontWeight:600,color:"#333"}}>{item.event}</div>
-    <div style={{fontSize:10.5,color:"#999"}}>{item.date} · {item.note}</div>
-  </div>
-</div>
-))}
-</div>
-
-{/* 底部说明：为何普通工具做不到 */}
-<div style={{background:"#F5F5F5",borderRadius:8,padding:"8px 12px",marginBottom:14}}>
-<div style={{fontSize:10.5,color:"#888",lineHeight:1.6}}>
-📌 <strong>Q仔做了什么：</strong>
-跨越「计网群」「竞赛群」「课题组群」「班级群」「出行聊天」5个来源，
-识别出3个同天截止的事项，推算了你的净可用时间，生成了分天行动计划。
-这些信息没有一条是你手动录入的——全部来自聊天。
-</div>
-</div>
-
-<div style={{display:"flex",gap:8}}>
-<button onClick={()=>{
-setShowCrossAnalysis(false);
-setRightTab("priority");
-setAiVisible(false);
-showToast("🎯 已跳转到优先级面板，查看详细安排","#9B59B6");
-}} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#9B59B6,#4A90D9)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-查看优先级安排 →
-</button>
-<button onClick={()=>setShowCrossAnalysis(false)} style={{padding:"10px 16px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>
-关闭
-</button>
-</div>
-</div>
-</div>
-)}
-
-{/* ── 弹窗：编辑优先级条目 ── */}
+      {/* 弹窗：群体排期分析 */}
+      {groupSchedM&&GROUP_SCHED[groupSchedM.chatId]&&(()=>{
+        const data=GROUP_SCHED[groupSchedM.chatId];
+        return(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000}} onClick={()=>setGroupSchedM(null)}>
+            <div style={{background:"#fff",borderRadius:16,padding:"26px",width:440,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+              <div style={{fontSize:16,fontWeight:800,color:"#333",marginBottom:4}}>📊 Q仔 · 群体排期分析</div>
+              <div style={{fontSize:12,color:"#999",marginBottom:16}}>「{data.gName}」· 共 {data.total} 人参与统计</div>
+              <div style={{marginBottom:18}}>
+                {data.slots.map((s,i)=>(
+                  <div key={i} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontSize:12.5,color:"#333",fontWeight:i===0?700:400}}>{i===0?"🏆 ":""}{s.label}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:i===0?"#52C41A":"#666"}}>{s.pct}% ({s.count}/{data.total}人)</span>
+                    </div>
+                    <div style={{height:20,background:"#F5F5F5",borderRadius:10,overflow:"hidden",position:"relative"}}>
+                      <div style={{height:"100%",width:`${s.pct}%`,background:i===0?"linear-gradient(90deg,#52C41A,#73D13D)":"linear-gradient(90deg,#4A90D9,#7B68EE)",borderRadius:10,transition:"width 0.8s ease",display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:6}}>
+                        {s.pct>25&&<span style={{fontSize:10,color:"#fff",fontWeight:600}}>{s.who.slice(0,15)}</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{background:"#F6FFED",border:"1px solid #95DE64",borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#52C41A",marginBottom:4}}>🏆 推荐最佳时间</div>
+                <div style={{fontSize:14,fontWeight:800,color:"#333",marginBottom:4}}>{data.best.label}</div>
+                <div style={{fontSize:12,color:"#666",marginBottom:4}}>参与率 {data.best.pct}%，{data.total} 人中 {Math.round(data.total*data.best.pct/100)} 人可参与</div>
+                <div style={{fontSize:11,color:"#999"}}>{data.note}</div>
+              </div>
+              <button onClick={()=>{
+                const nev:ScheduleEvent={id:Date.now(),date:data.best.date,startTime:data.best.sT,endTime:data.best.eT,title:data.best.title,type:"event",color:data.best.color,priority:"medium"};
+                setSchedule(p=>{const ex=p.some(e=>e.title===nev.title&&e.date===nev.date);return ex?p:[...p,nev];});
+                setSchDate(data.best.date);setRightTab("schedule");
+                setTimeout(()=>setHighlightId(nev.id),200);setTimeout(()=>setHighlightId(null),3000);
+                const _cid=groupSchedM.chatId;
+                setGroupSchedM(null);
+                showToast(`✅ 已写入日程：${data.best.label}`,"#52C41A");
+                const _notice:Message={id:Date.now()+200,sender:"Q仔",isAI:true,content:`📅【排期确认通知】\n\n「${data.gName}」活动时间已正式确定！\n\n🕐 时间：${data.best.label}\n📅 日期：${data.best.date}\n👥 参与人数：${data.total} 人中约 ${Math.round(data.total*data.best.pct/100)} 人（参与率 ${data.best.pct}%）\n📌 ${data.note}\n\n请各成员提前安排好行程，准时出席！`,time:"10:49",self:false};
+                setMessages((p:Record<number,Message[]>)=>({...p,[_cid]:[...p[_cid],_notice]}));
+              }} style={{width:"100%",padding:"11px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#52C41A,#73D13D)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>✓ 确认最佳时间，写入日程并通知群成员</button>
+            </div>
+          </div>
+        );
+      })()}
+{/* 弹窗：编辑优先级条目 */}
 {editingPItem&&(
-<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setEditingPItem(null)}>
-<div style={{background:"#fff",borderRadius:16,padding:"24px",width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
-<div style={{fontSize:15,fontWeight:800,color:"#333",marginBottom:4}}>✏️ 调整优先级</div>
-{/* AI学习提示 */}
-<div style={{background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1px solid #D3B8E0",borderRadius:8,padding:"6px 10px",marginBottom:14,display:"flex",gap:6,alignItems:"center"}}>
-<span style={{fontSize:14}}>✨</span>
-<span style={{fontSize:10.5,color:"#7B68EE",lineHeight:1.4}}>修改后 Q仔会记录你的偏好，下次遇到同类任务会自动参考此调整</span>
-</div>
-<div style={{marginBottom:12}}>
-<div style={{fontSize:12,color:"#666",marginBottom:4}}>事项名称</div>
-<input value={editingPItem.title} onChange={e=>setEditingPItem(p=>p?{...p,title:e.target.value}:null)}
-style={{width:"100%",height:34,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333",boxSizing:"border-box"}}/>
-</div>
-<div style={{marginBottom:12}}>
-<div style={{fontSize:12,color:"#666",marginBottom:4}}>备注说明</div>
-<input value={editingPItem.desc} onChange={e=>setEditingPItem(p=>p?{...p,desc:e.target.value}:null)}
-style={{width:"100%",height:34,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333",boxSizing:"border-box"}}/>
-</div>
-<div style={{marginBottom:14}}>
-<div style={{fontSize:12,color:"#666",marginBottom:8}}>调整优先级</div>
-<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-{[
-  {l:"紧急",e:"🔴",c:"#FF4D4F"},
-  {l:"重要",e:"🟠",c:"#FA8C16"},
-  {l:"一般",e:"🟡",c:"#FAAD14"},
-  {l:"已确认",e:"🟢",c:"#52C41A"},
-  {l:"方案参考",e:"🔵",c:"#3B82F6"},
-].map(opt=>(
-  <button key={opt.l} onClick={()=>setEditingPItem(p=>p?{...p,level:opt.l}:null)}
-    style={{padding:"6px 12px",borderRadius:10,border:`2px solid ${editingPItem.level===opt.l?opt.c:"#E5E8EE"}`,background:editingPItem.level===opt.l?`${opt.c}15`:"#fff",color:editingPItem.level===opt.l?opt.c:"#666",fontSize:12,fontWeight:editingPItem.level===opt.l?700:400,cursor:"pointer"}}>
-    {opt.e} {opt.l}
-  </button>
-))}
-</div>
-</div>
-{/* 预览AI推理 */}
-<div style={{background:"#F8F9FF",border:"1px solid #E8EEFA",borderRadius:8,padding:"8px 10px",marginBottom:14}}>
-<div style={{fontSize:10,color:"#8B9ABF",marginBottom:2,fontWeight:600}}>调整后 Q仔的推理依据将更新为：</div>
-<div style={{fontSize:10.5,color:"#555",fontStyle:"italic",lineHeight:1.4}}>
-🤖 {getAiReason(editingPItem.title,editingPItem.level)}
-{editingPItem.level!==editingPItem.desc.slice(0,2)&&` · 已根据你的手动调整更新判断`}
-</div>
-</div>
-<div style={{display:"flex",gap:8}}>
-<button onClick={()=>{
-if(!editingPItem)return;
-const colorMap2:Record<string,string>={紧急:"#FF4D4F",重要:"#FA8C16",一般:"#FAAD14",方案参考:"#3B82F6",已确认:"#52C41A",敏感:"#8C8C8C"};
-const emojiMap2:Record<string,string>={紧急:"🔴",重要:"🟠",一般:"🟡",方案参考:"🔵",已确认:"🟢",敏感:"⚫"};
-// 找出原始level
-const origOverride=priorityOverrides[editingPItem.id];
-const origLevel=origOverride||editingPItem.desc;
-if(origLevel!==editingPItem.level){
-  const now=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
-  setAiLearnLog(p=>[...p,{from:origOverride||"AI推荐",to:editingPItem.level,title:editingPItem.title,time:now}]);
-  showToast(`✨ Q仔已记录：将「${editingPItem.title.slice(0,10)}」调为${editingPItem.level}，下次同类任务自动参考`,"#7B68EE");
-} else {
-  showToast("✅ 已保存","#52C41A");
-}
-setPriorityOverrides(p=>({...p,[editingPItem.id]:editingPItem.level}));
-setEditingPItem(null);
-}} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>保存 · Q仔记录此偏好</button>
-<button onClick={()=>{
-setPriorityDone(p=>new Set([...p,editingPItem.id]));
-setEditingPItem(null);
-showToast("🗑️ 已从优先级列表移除","#8C8C8C");
-}} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #ffa39e",background:"#fff",color:"#FF4D4F",fontSize:13,cursor:"pointer"}}>删除</button>
-<button onClick={()=>setEditingPItem(null)} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>取消</button>
-</div>
-</div>
-</div>
-)}
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setEditingPItem(null)}>
+          <div style={{background:"#fff",borderRadius:16,padding:"24px",width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:15,fontWeight:800,color:"#333",marginBottom:4}}>✏️ 编辑优先级</div>
+            <div style={{fontSize:11,color:"#7B68EE",background:"#F3E5F5",padding:"5px 10px",borderRadius:8,marginBottom:16,display:"flex",alignItems:"center",gap:6}}>
+              <span>✨</span><span>修改后 Q仔会记录你的偏好，下次自动参考</span>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:12,color:"#666",marginBottom:4}}>事项名称</div>
+              <input value={editingPItem.title} onChange={e=>setEditingPItem(p=>p?{...p,title:e.target.value}:null)}
+                style={{width:"100%",height:34,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333",boxSizing:"border-box"}}/>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:12,color:"#666",marginBottom:4}}>备注说明</div>
+              <input value={editingPItem.desc} onChange={e=>setEditingPItem(p=>p?{...p,desc:e.target.value}:null)}
+                style={{width:"100%",height:34,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333",boxSizing:"border-box"}}/>
+            </div>
+            <div style={{marginBottom:18}}>
+              <div style={{fontSize:12,color:"#666",marginBottom:8}}>优先级</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {[{l:"紧急",e:"🔴",c:"#FF4D4F"},{l:"重要",e:"🟠",c:"#FA8C16"},{l:"一般",e:"🟡",c:"#FAAD14"},{l:"已确认",e:"🟢",c:"#52C41A"},{l:"方案参考",e:"🔵",c:"#3B82F6"}].map(opt=>(
+                  <button key={opt.l} onClick={()=>setEditingPItem(p=>p?{...p,level:opt.l}:null)}
+                    style={{padding:"6px 12px",borderRadius:10,border:`2px solid ${editingPItem.level===opt.l?opt.c:"#E5E8EE"}`,background:editingPItem.level===opt.l?`${opt.c}15`:"#fff",color:editingPItem.level===opt.l?opt.c:"#666",fontSize:12,fontWeight:editingPItem.level===opt.l?700:400,cursor:"pointer"}}>
+                    {opt.e} {opt.l}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{
+                if(!editingPItem)return;
+                const oldItem=editingPItem;
+                // 找原来的level
+                const origItems=capsules.map(c=>({id:`c${c.id}`,level:c.type==="conflict"?"紧急":c.type==="sensitive"?"敏感":c.type==="plan"?"方案参考":c.type==="confirmed"?"已确认":c.importance==="high"?"紧急":c.importance==="medium"?"重要":"一般"}));
+                const origItem=origItems.find(it=>it.id===oldItem.id);
+                const origLevel=origItem?.level||"重要";
+                if(origLevel!==oldItem.level){
+                  setAiLearnLog(p=>[...p,{from:origLevel,to:oldItem.level,title:oldItem.title}]);
+                  showToast(`✨ Q仔已记录：将「${oldItem.title.slice(0,12)}」从${origLevel}调为${oldItem.level}`,"#7B68EE");
+                }
+                setPriorityOverrides(p=>({...p,[oldItem.id]:oldItem.level}));
+                setEditingPItem(null);
+              }} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>保存</button>
+              <button onClick={()=>{
+                // 删除该条目（标记为done并隐藏）
+                setPriorityDone(p=>new Set([...p,editingPItem.id]));
+                setEditingPItem(null);
+                showToast("🗑️ 已从优先级列表移除","#8C8C8C");
+              }} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #ffa39e",background:"#fff",color:"#FF4D4F",fontSize:13,cursor:"pointer"}}>删除</button>
+              <button onClick={()=>setEditingPItem(null)} style={{padding:"10px 14px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>取消</button>
+            </div>
+          </div>
+        </div>
+      )}
 
-{/* ── 弹窗：敏感信息解锁 ── */}
-{sensitiveCapId!==null&&(
-<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:4000}} onClick={()=>{setSensitiveCapId(null);setSensitiveInput("");}}>
-<div style={{background:"#fff",borderRadius:16,padding:"26px",width:360,boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
-<div style={{fontSize:16,fontWeight:800,color:"#333",marginBottom:6}}>🔐 敏感信息保护</div>
-<div style={{background:"#F5F5F5",border:"1px solid #E5E8EE",borderRadius:8,padding:"8px 10px",marginBottom:12}}>
-<div style={{fontSize:10.5,color:"#666",lineHeight:1.5}}>
-🤖 Q仔已对该内容进行本地 AES-256 加密存储。云端仅存储「该聊天提到了账号信息」这一指针，无法还原实际内容。请输入你设置的访问密码查看。
-</div>
-</div>
-<input type="password" value={sensitiveInput} autoFocus
-onChange={e=>setSensitiveInput(e.target.value)}
-onKeyDown={e=>{
-if(e.key!=="Enter")return;
-if(sensitiveInput==="666"){
-  setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));
-  setSensitiveCapId(null);setSensitiveInput("");
-  showToast("🔓 验证通过，账号密码已显示","#52C41A");
-} else {
-  showToast("❌ 密码错误","#FF4D4F");
-}
-}}
-placeholder="输入访问密码…"
-style={{width:"100%",height:42,padding:"0 12px",border:"1.5px solid #E5E8EE",borderRadius:8,fontSize:14,outline:"none",color:"#333",boxSizing:"border-box",marginBottom:16}}/>
-<div style={{display:"flex",gap:8}}>
-<button onClick={()=>{
-if(sensitiveInput==="666"){
-  setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));
-  setSensitiveCapId(null);setSensitiveInput("");
-  showToast("🔓 已解锁","#52C41A");
-} else {
-  showToast("❌ 密码错误","#FF4D4F");
-}
-}} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>确认解锁</button>
-<button onClick={()=>{setSensitiveCapId(null);setSensitiveInput("");}} style={{padding:"10px 16px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>取消</button>
-</div>
-<div style={{fontSize:11,color:"#bbb",textAlign:"center",marginTop:10}}>演示密码：666</div>
-</div>
-</div>
-)}
+      {/* 弹窗：敏感信息解锁 */}
+      {sensitiveCapId!==null&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:4000}} onClick={()=>{setSensitiveCapId(null);setSensitiveInput("");}}>
+          <div style={{background:"#fff",borderRadius:16,padding:"26px",width:360,boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:16,fontWeight:800,color:"#333",marginBottom:6}}>🔐 敏感信息保护</div>
+            <div style={{fontSize:12,color:"#666",marginBottom:16,lineHeight:1.6}}>该代办包含账号/密码等隐私信息，需要输入访问密码才能查看完整内容。</div>
+            <input type="password" value={sensitiveInput} autoFocus
+              onChange={e=>setSensitiveInput(e.target.value)}
+              onKeyDown={e=>{
+                if(e.key!=="Enter")return;
+                if(sensitiveInput==="666"){setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));setSensitiveCapId(null);setSensitiveInput("");showToast("🔓 验证通过，账号密码已显示","#52C41A");}
+                else showToast("❌ 密码错误","#FF4D4F");
+              }}
+              placeholder="输入访问密码…"
+              style={{width:"100%",height:42,padding:"0 12px",border:"1.5px solid #E5E8EE",borderRadius:8,fontSize:14,outline:"none",color:"#333",boxSizing:"border-box",marginBottom:16}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>{
+                if(sensitiveInput==="666"){setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));setSensitiveCapId(null);setSensitiveInput("");showToast("🔓 已解锁","#52C41A");}
+                else showToast("❌ 密码错误","#FF4D4F");
+              }} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>确认解锁</button>
+              <button onClick={()=>{setSensitiveCapId(null);setSensitiveInput("");}} style={{padding:"10px 16px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>取消</button>
+            </div>
+            <div style={{fontSize:11,color:"#bbb",textAlign:"center",marginTop:10}}>演示密码：666</div>
+          </div>
+        </div>
+      )}
 
-{/* ── 全局样式 ── */}
-<style>{`
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D9DCE0; border-radius: 4px; }
-input::placeholder { color: #BFBFBF; }
-`}</style>
-</div>
-);
+      <style>{`::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#D9DCE0;border-radius:4px;}input::placeholder{color:#BFBFBF;}`}</style>
+    </div>
+  );
 }
-
-
