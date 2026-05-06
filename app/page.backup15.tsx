@@ -674,39 +674,6 @@ const getAiReason = (title: string, level: string, from?: string): string => {
 };
 
 // ══════════════════════════════════════════════════════════
-// 【追加到 Part1 末尾】本周计划表数据 + 跨群分析回复更新
-// ══════════════════════════════════════════════════════════
-
-/** 本周行动计划表（跨群分析 Tab 中的可视化表格）*/
-const WEEKLY_PLAN_ROWS = [
-  { date:"4/29 今天",   task:"课题组组会 16:30（腾讯会议）",   priority:"🔴 必须", time:"3H（固定）",   source:"课题组群",  color:"#FFF1F0" },
-  { date:"4/29 今晚",   task:"计网作业起步：框架 + 习题3.1-3.5", priority:"🟠 重要", time:"1.5H",       source:"计网群",    color:"#FFF7E6" },
-  { date:"4/30 周三",   task:"计网编程题（TCP三次握手）+运行截图", priority:"🟠 重要", time:"2H",         source:"计网群",    color:"#FFF7E6" },
-  { date:"5/1-5/3 五一",task:"计网收尾 + 创新赛商业模式补充",    priority:"🟠 重要", time:"3H/天",       source:"多群整合",  color:"#FFF7E6" },
-  { date:"5/4-5/5",     task:"创新赛PPT精修 + Demo视频录制",     priority:"🟠 重要", time:"共4H",        source:"竞赛群",    color:"#FFF7E6" },
-  { date:"5/6 ⚡高危",   task:"计网提交 23:59 + 创新赛提交 23:59",priority:"🔴 双截止",time:"全天把控",   source:"多群",      color:"#FFF1F0" },
-  { date:"5/7 周四",    task:"操作系统实验3答辩 14:00 机房405",   priority:"🔴 必须", time:"备2H+答辩3H", source:"课程群",    color:"#FFF1F0" },
-];
-
-// 更新跨群分析回复，增加 "本周计划" 场景
-const CROSS_ANALYSIS_REPLIES_EXTRA: Record<string, string> = {
-  plan: `✅ 本周行动计划已生成（详见下方表格）
-
-📊 **Q仔整合来源：**
-• 计算机网络群（张老师 + 助教 4/25）→ 计网作业 DDL 5/6
-• Team Phoenix 竞赛群（队友周 今天）→ 初赛截止 5/6
-• 课题组群（翁一士 今天）→ 组会 16:30
-• 操作系统群（助教 昨天）→ 答辩 5/7
-• 你的课表（已导入）→ 可用时间推算
-
-⚠️ **关键警告：5月6日 双线截止**
-计网作业（预估3H）+ 创新赛（预估已亏欠4H）→ 本周净可用时间约 **16H**，时间非常紧张。
-
-📎 点击表格中任意来源可跳转到原始消息`,
-};
-
-
-// ══════════════════════════════════════════════════════════
 // 以下是主组件（Part 2 继续）
 // 此处为 Part 1 结束标记，Part 2 从 export default function QCapsuleDemo(){ 开始
 // ══════════════════════════════════════════════════════════
@@ -807,9 +774,7 @@ export default function QCapsuleDemo(){
   ]);
   const [crossInput,       setCrossInput]       = useState("");
   const [crossLoading,     setCrossLoading]     = useState(false);
-  const [crossShowTable,  setCrossShowTable]  = useState(false);
-  const [crossShowCard,   setCrossShowCard]   = useState(false);
-  const [conflictDemoMode,setConflictDemoMode]= useState(false);
+
   // ────────────────────────────────────────────────────────
   // Refs
   // ────────────────────────────────────────────────────────
@@ -971,47 +936,6 @@ export default function QCapsuleDemo(){
     }, 300);
   };
 
-  const simConflictDemo = () => {
-    setActiveChat(11);
-    setUnreadMap(p=>({...p,11:0}));
-    setTimeout(()=>{
-      setMessages(p=>({...p,11:[...p[11],{
-        id:Date.now(),sender:"社长小明",
-        content:"提醒：周六下午外拍活动确认在情人谷，下马坊A口 14:00 集合，请准时！",
-        time:"20:30",self:false,date:"今天"
-      }]}));
-    },400);
-    setTimeout(()=>{
-      const exists=capsules.some(c=>c.id===103);
-      if(!exists){
-        const cap:Capsule={
-          id:103,type:"conflict",importance:"high",
-          group:"摄影社 × 竞赛",
-          title:"⚠️ 周六下午时间冲突",
-          content:"周六14:00 摄影外拍（情人谷·下马坊A口）\n周六14:30 创新赛内部评审\n两者不可兼得",
-          time:"20:30",from:"AI 检测",new:true,createdAt:TODAY,
-        };
-        setCapsules(p=>[cap,...p]);
-        setNewCapIds(p=>[cap.id,...p]);
-        setFlyingCap(cap.id);
-        setRightTab("capsule");
-        setTimeout(()=>setFlyingCap(null),800);
-      } else {
-        setRightTab("capsule");
-      }
-      showToast("🔴 冲突检测！摄影社外拍 vs 创新赛评审 时间重叠","#FF4D4F");
-    },900);
-    setTimeout(()=>{
-      setConflictSuggestion({
-        capId:103,
-        keep:"创新赛内部评审（周六 14:30）",
-        cancel:"摄影社外拍（周六 14:00·情人谷）",
-        reason:"根据你过去 3 次冲突时的选择记录，竞赛类优先级高于社团活动。Q仔判断：创新赛初赛还剩7天，评审是关键节点；摄影社外拍可提前联系社长请假，影响可控。",
-      });
-      setShowConflictSuggest(true);
-    },1800);
-  };
-
   /** Demo 按钮：自动抓取 DDL 演示（含学习日志更新）*/
   const simDDL = () => {
     setActiveChat(4);
@@ -1031,13 +955,7 @@ export default function QCapsuleDemo(){
       setFlyingCap(cap.id);
       setRightTab("capsule");
       setTimeout(()=>setFlyingCap(null),800);
-      showToast("🟡 Q仔自动识别：张老师第3次DDL提醒，紧迫度↑ · 已记入学习模型","#FA8C16");
-      // 写入学习日志
-      const now=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
-      setLearningLog(p=>[
-        {type:"auto-miss" as const,icon:"📡",time:now,content:"自动识别：张老师「5/6 23:59 截止」→ 已生成待确认代办（置信度 92%）"},
-        ...p
-      ].slice(0,15));
+      showToast("🟡 Q仔自动识别：张老师第3次DDL提醒，紧迫度↑","#FA8C16");
     }, 1100);
   };
 
@@ -1078,39 +996,24 @@ export default function QCapsuleDemo(){
     setCrossInput("");
     setCrossLoading(true);
     setTimeout(()=>{
+      // 根据关键词选择预制回复
       let reply = CROSS_ANALYSIS_REPLIES.today;
       const lq = q.toLowerCase();
-      if(lq.includes("这周")||lq.includes("本周")||lq.includes("一周")) {
-        reply = CROSS_ANALYSIS_REPLIES.week;
-      } else if(lq.includes("危险")||lq.includes("最紧")||lq.includes("最急")) {
-        reply = CROSS_ANALYSIS_REPLIES.danger;
-      } else if(lq.includes("今天")||lq.includes("今日")||lq.includes("今晚")) {
-        reply = CROSS_ANALYSIS_REPLIES.today;
-      }
-      const isTableQuery = lq.includes("计划")||lq.includes("本周要")||lq.includes("这周要")||lq.includes("安排")||lq.includes("规划");
-      const isCardQuery  = lq.includes("分析")||lq.includes("高风险")||lq.includes("该做")||lq.includes("怎么办")||lq.includes("今天")||lq.includes("今日")||lq.includes("这周")||lq.includes("本周");
-      if(isTableQuery){
-        reply = CROSS_ANALYSIS_REPLIES_EXTRA.plan;
-        setCrossShowTable(true);
-        setCrossShowCard(true);
-      } else if(isCardQuery){
-        setCrossShowCard(true);
-      }
+      if(lq.includes("这周")||lq.includes("本周")||lq.includes("一周")) reply = CROSS_ANALYSIS_REPLIES.week;
+      else if(lq.includes("危险")||lq.includes("最紧")||lq.includes("最急")) reply = CROSS_ANALYSIS_REPLIES.danger;
+      else if(lq.includes("今天")||lq.includes("今日")||lq.includes("今晚")) reply = CROSS_ANALYSIS_REPLIES.today;
       setCrossMessages(p=>[...p,{role:"ai",content:reply}]);
       setCrossLoading(false);
     }, 1200);
   };
 
-
   /** Demo 按钮：跨群分析演示 */
   const simCrossAnalysis = () => {
     setRightTab("cross");
-    setCrossShowTable(false);
     setTimeout(()=>{
-      sendCrossAnalysis("我这周要做什么？帮我生成本周计划");
+      sendCrossAnalysis("我今天应该做什么？");
     }, 500);
   };
-
 
   // ────────────────────────────────────────────────────────
   // 【模块三·协作分析】Handlers
@@ -1401,11 +1304,6 @@ export default function QCapsuleDemo(){
 // 拼接到 Part2 末尾（allLearnLog 计算量之后）
 // ══════════════════════════════════════════════════════════
 
-// ══════════════════════════════════════════════════════════
-// PART 3 完整版（含全部修改：演示控制台/快进/跨群表格/了解你）
-// 直接整体替换之前的 Part3 文件
-// ══════════════════════════════════════════════════════════
-
 return (
   <div style={{display:"flex",height:"100vh",width:"100vw",background:"#F0F2F5",fontFamily:"'PingFang SC','Microsoft YaHei',sans-serif",overflow:"hidden",position:"relative",color:"#333"}}>
 
@@ -1442,7 +1340,7 @@ return (
       </div>
     )}
 
-    {/* ── 群组右键菜单 ── */}
+    {/* ── 群组右键菜单（新增 Q仔设置入口）── */}
     {groupCtxMenu&&(
       <div onClick={e=>e.stopPropagation()} style={{position:"fixed",left:groupCtxMenu.x,top:groupCtxMenu.y,background:"#fff",border:"1px solid #E5E8EE",borderRadius:8,boxShadow:"0 8px 24px rgba(0,0,0,0.14)",zIndex:9998,minWidth:160,overflow:"hidden"}}>
         <div onClick={()=>openGroupSetup(groupCtxMenu.chatId)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7,color:"#1677FF"}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F0F7FF"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>⚙️ Q仔设置</div>
@@ -1451,7 +1349,7 @@ return (
       </div>
     )}
 
-    {/* ── AI右键菜单 ── */}
+    {/* ── AI总结右键菜单 ── */}
     {aiCtxMenu&&(
       <div onClick={e=>e.stopPropagation()} style={{position:"fixed",left:aiCtxMenu.x,top:aiCtxMenu.y,background:"#fff",border:"1px solid #E5E8EE",borderRadius:8,boxShadow:"0 8px 24px rgba(0,0,0,0.14)",zIndex:9998,minWidth:160,overflow:"hidden"}}>
         <div onClick={()=>captureAIContent(aiCtxMenu.content)} style={{padding:"9px 14px",cursor:"pointer",fontSize:12.5,display:"flex",alignItems:"center",gap:7}} onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"} onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>🔵 抓取为方案参考</div>
@@ -1460,7 +1358,9 @@ return (
       </div>
     )}
 
-    {/* ══ 左侧导航条 ══ */}
+    {/* ══════════════════════════════════════════════════════
+        左侧导航条
+    ══════════════════════════════════════════════════════ */}
     <div style={{width:56,background:"linear-gradient(180deg,#2D3138 0%,#1F2329 100%)",display:"flex",flexDirection:"column",alignItems:"center",paddingTop:16,gap:4}}>
       <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff",marginBottom:12,border:"2px solid #fff"}}>小A</div>
       {([{icon:"💬",badge:totalUnread as number,active:true},{icon:"👥"},{icon:"📁"},{icon:"🎮"},{icon:"📅"}] as {icon:string;badge?:number;active?:boolean}[]).map((item,i)=>(
@@ -1470,11 +1370,14 @@ return (
         </div>
       ))}
       <div style={{flex:1}}/>
-      {allLearnLog.filter(l=>l.time!=="历史").length>0&&<div style={{width:8,height:8,borderRadius:"50%",background:"#52C41A",boxShadow:"0 0 6px #52C41A",marginBottom:4}} title="Q仔正在学习中"/>}
+      {/* Q仔学习状态绿点 */}
+      {allLearnLog.length>0&&<div style={{width:8,height:8,borderRadius:"50%",background:"#52C41A",boxShadow:"0 0 6px #52C41A",marginBottom:4}} title="Q仔正在学习中"/>}
       <div style={{width:36,height:36,borderRadius:8,background:"linear-gradient(135deg,#4A90D9,#9B59B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff",marginBottom:12}}>Q</div>
     </div>
 
-    {/* ══ 聊天列表 ══ */}
+    {/* ══════════════════════════════════════════════════════
+        聊天列表（群组头像新增 Q 监听标记）
+    ══════════════════════════════════════════════════════ */}
     <div style={{width:280,background:"#fff",borderRight:"1px solid #E5E5E5",display:"flex",flexDirection:"column"}}>
       <div style={{padding:"12px 14px 10px",borderBottom:"1px solid #F0F0F0",display:"flex",alignItems:"center",gap:8}}>
         <div style={{flex:1,height:30,background:"#F5F5F5",borderRadius:6,padding:"0 10px",display:"flex",alignItems:"center",gap:6}}>
@@ -1491,11 +1394,13 @@ return (
           const unread=unreadMap[chat.id]||0;
           const isMonitored=chat.type==="group"&&monitoredGroups.has(chat.id);
           return (
-            <div key={chat.id} onClick={()=>handleSelectChat(chat.id)} onContextMenu={e=>handleGroupCM(e,chat.id)}
+            <div key={chat.id} onClick={()=>handleSelectChat(chat.id)}
+              onContextMenu={e=>handleGroupCM(e,chat.id)}
               style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",cursor:"pointer",background:activeChat===chat.id?"#E8F0FE":chat.pinned?"#FAFBFD":"transparent",borderBottom:"1px solid #F5F5F5"}}>
               <div style={{position:"relative",flexShrink:0}}>
                 <div style={{width:42,height:42,borderRadius:8,background:chat.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:chat.avatar.length>1?18:16,fontWeight:700,color:"#fff"}}>{chat.avatar}</div>
                 {chat.online&&<div style={{position:"absolute",bottom:-1,right:-1,width:10,height:10,borderRadius:"50%",background:"#52C41A",border:"2px solid #fff"}}/>}
+                {/* Q仔监听标记（蓝色Q角标）*/}
                 {isMonitored&&<div style={{position:"absolute",bottom:-3,right:-3,width:14,height:14,borderRadius:"50%",background:"#1677FF",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff"}}>Q</div>}
               </div>
               <div style={{flex:1,overflow:"hidden",minWidth:0}}>
@@ -1524,9 +1429,12 @@ return (
       </div>
     </div>
 
-    {/* ══ 中间聊天区 ══ */}
+    {/* ══════════════════════════════════════════════════════
+        中间聊天区（含智能检索面板覆盖层）
+    ══════════════════════════════════════════════════════ */}
     <div style={{flex:1,display:"flex",flexDirection:"column",background:"#F0F2F5",minWidth:0,position:"relative"}}>
-      {/* 顶栏 */}
+
+      {/* 聊天顶栏 */}
       <div style={{padding:"12px 20px",background:"#fff",borderBottom:"1px solid #E5E5E5",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:32,height:32,borderRadius:6,background:currentChat?.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#fff"}}>{currentChat?.avatar}</div>
@@ -1550,7 +1458,7 @@ return (
         </div>
       </div>
 
-      {/* 多选栏 */}
+      {/* 多选提示栏 */}
       {selectMode&&(
         <div style={{background:"#E8F0FE",padding:"6px 20px",borderBottom:"1px solid #BAE0FF",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
           <span style={{fontSize:12,color:"#4A90D9",fontWeight:600}}>☑️ 多选模式 · 已选 {selMsgIds.size} 条</span>
@@ -1616,7 +1524,7 @@ return (
         <div ref={chatEndRef}/>
       </div>
 
-      {/* 输入区（含🔍智能检索入口）*/}
+      {/* 聊天输入区（含🔍智能检索入口）*/}
       <div style={{background:"#fff",borderTop:"1px solid #E5E5E5",flexShrink:0}}>
         <div style={{padding:"8px 16px 4px",display:"flex",alignItems:"center",gap:14,fontSize:16}}>
           {["😀","✂️","📁","🖼️","📨","🎤"].map((i,k)=><span key={k} style={{cursor:"pointer",color:"#666"}}>{i}</span>)}
@@ -1624,7 +1532,9 @@ return (
         <div style={{padding:"0 16px 12px"}}>
           <div style={{minHeight:56,padding:"8px 12px",background:"#F8F9FB",borderRadius:6,border:"1px solid #EAEAEA",fontSize:12.5,color:"#bbb"}}>输入消息…</div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
-            <button onClick={()=>setShowSearchPanel(true)} style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:10,border:"1.5px solid #BAE0FF",background:"#F0F7FF",color:"#4A90D9",fontSize:12,fontWeight:600,cursor:"pointer"}}>
+            {/* 🔍 智能检索按钮 */}
+            <button onClick={()=>setShowSearchPanel(true)}
+              style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:10,border:"1.5px solid #BAE0FF",background:"#F0F7FF",color:"#4A90D9",fontSize:12,fontWeight:600,cursor:"pointer"}}>
               🔍 智能检索
             </button>
             <button style={{padding:"5px 18px",borderRadius:4,border:"none",background:"linear-gradient(135deg,#4A90D9,#2563EB)",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>发送 ▾</button>
@@ -1632,9 +1542,10 @@ return (
         </div>
       </div>
 
-      {/* 智能检索面板覆盖层 */}
+      {/* ── 智能检索面板（覆盖层）── */}
       {showSearchPanel&&(
         <div style={{position:"absolute",inset:0,background:"#fff",zIndex:200,display:"flex",flexDirection:"column"}}>
+          {/* 搜索面板头部 */}
           <div style={{padding:"12px 16px",borderBottom:"1px solid #F0F0F0",display:"flex",alignItems:"center",gap:10,background:"#fff",flexShrink:0}}>
             <button onClick={()=>setShowSearchPanel(false)} style={{background:"none",border:"none",fontSize:18,color:"#666",cursor:"pointer",padding:"0 4px"}}>←</button>
             <div style={{flex:1,height:34,background:"#F5F5F5",borderRadius:8,display:"flex",alignItems:"center",gap:8,padding:"0 12px"}}>
@@ -1644,30 +1555,39 @@ return (
             </div>
             <button onClick={handleSmartSearch} style={{padding:"6px 14px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>搜索</button>
           </div>
+
+          {/* 搜索类型 Tabs */}
           <div style={{display:"flex",borderBottom:"1px solid #F0F0F0",background:"#FAFBFD",flexShrink:0}}>
             {(["全部","图片/视频","文件","链接","🔍 智能检索"] as const).map((tab,i)=>(
               <button key={tab} onClick={()=>setSearchMode(i===4?"smart":"normal")}
-                style={{flex:1,padding:"9px 4px",border:"none",background:(i===4&&searchMode==="smart")?"#fff":"transparent",
+                style={{flex:1,padding:"9px 4px",border:"none",background:(i===4&&searchMode==="smart")||(i!==4&&searchMode==="normal"&&i===0)?"#fff":"transparent",
                   color:(i===4&&searchMode==="smart")?"#4A90D9":"#666",
                   fontSize:11,fontWeight:(i===4&&searchMode==="smart")?700:400,cursor:"pointer",
-                  borderBottom:(i===4&&searchMode==="smart")?"2px solid #4A90D9":"2px solid transparent",whiteSpace:"nowrap"}}>
+                  borderBottom:(i===4&&searchMode==="smart")?"2px solid #4A90D9":"2px solid transparent",
+                  whiteSpace:"nowrap"}}>
                 {tab}
               </button>
             ))}
           </div>
+
+          {/* 智能检索内容区 */}
           <div style={{flex:1,overflowY:"auto",padding:"16px"}}>
             {searchMode==="smart"&&(
               <>
+                {/* 未搜索时的提示 */}
                 {!keywordLoading&&!searchDone&&(
                   <div style={{textAlign:"center",padding:"40px 20px",color:"#bbb"}}>
                     <div style={{fontSize:32,marginBottom:12}}>🧠</div>
                     <div style={{fontSize:14,fontWeight:600,color:"#666",marginBottom:8}}>Q仔智能检索</div>
                     <div style={{fontSize:12,color:"#bbb",lineHeight:1.7}}>
-                      不记得用什么词发的？直接说你想找的事情。<br/><br/>
+                      不记得用什么词发的？<br/>
+                      直接说你想找的事情，Q仔帮你找。<br/><br/>
                       <span style={{color:"#4A90D9",background:"#F0F7FF",padding:"3px 8px",borderRadius:6,fontSize:11}}>试试：「教务系统密码是什么」</span>
                     </div>
                   </div>
                 )}
+
+                {/* AI关键词生成动画 */}
                 {(keywordLoading||aiKeywords.length>0)&&(
                   <div style={{marginBottom:16}}>
                     <div style={{fontSize:11.5,color:"#4A90D9",fontWeight:600,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
@@ -1676,16 +1596,21 @@ return (
                     </div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                       {aiKeywords.map((kw,i)=>(
-                        <span key={i} style={{padding:"3px 10px",borderRadius:12,background:"#E8F0FE",color:"#4A90D9",fontSize:11.5,fontWeight:600,border:"1px solid #BAE0FF"}}>{kw}</span>
+                        <span key={i} style={{padding:"3px 10px",borderRadius:12,background:"#E8F0FE",color:"#4A90D9",fontSize:11.5,fontWeight:600,border:"1px solid #BAE0FF",
+                          animation:"fadeIn 0.3s ease"}}>
+                          {kw}
+                        </span>
                       ))}
                       {keywordLoading&&<span style={{padding:"3px 10px",color:"#bbb",fontSize:11}}>生成中…</span>}
                     </div>
                   </div>
                 )}
+
+                {/* 搜索结果 */}
                 {searchDone&&(
                   <div>
                     <div style={{fontSize:11.5,color:"#999",marginBottom:10,fontWeight:600}}>
-                      {searchResults.length>0?`找到 ${searchResults.length} 条相关消息（当前对话内）`:"未找到相关内容，尝试调整描述"}
+                      {searchResults.length>0?`找到 ${searchResults.length} 条相关消息（当前对话内）`:"未在当前对话中找到相关内容，尝试调整关键词"}
                     </div>
                     {searchResults.map((result,i)=>(
                       <div key={i} onClick={()=>handleSearchResultClick(result)}
@@ -1693,7 +1618,9 @@ return (
                         onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#F5F7FA"}
                         onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="#fff"}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
-                          <div style={{width:20,height:20,borderRadius:4,background:`hsl(${(result.sender.charCodeAt(0)*17)%360},60%,60%)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>{result.sender.slice(0,1)}</div>
+                          <div style={{width:20,height:20,borderRadius:4,background:`hsl(${(result.sender.charCodeAt(0)*17)%360},60%,60%)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",flexShrink:0}}>
+                            {result.sender.slice(0,1)}
+                          </div>
                           <span style={{fontSize:11.5,fontWeight:600,color:"#333"}}>{result.sender}</span>
                           <span style={{fontSize:10.5,color:"#bbb",marginLeft:"auto"}}>{result.date||""} {result.time}</span>
                         </div>
@@ -1712,17 +1639,21 @@ return (
               </>
             )}
             {searchMode==="normal"&&(
-              <div style={{textAlign:"center",padding:"40px",color:"#bbb",fontSize:13}}>请切换到「🔍 智能检索」体验 AI 语义搜索</div>
+              <div style={{textAlign:"center",padding:"40px",color:"#bbb",fontSize:13}}>
+                请切换到「🔍 智能检索」体验 AI 语义搜索
+              </div>
             )}
           </div>
         </div>
       )}
     </div>
 
-    {/* ══ 右侧面板 ══ */}
+    {/* ══════════════════════════════════════════════════════
+        右侧面板（新增「跨群分析」Tab，共5个Tab）
+    ══════════════════════════════════════════════════════ */}
     <div style={{width:360,background:"#fff",borderLeft:"1px solid #E5E5E5",display:"flex",flexDirection:"column",overflow:"hidden"}}>
 
-      {/* AI 对话面板 */}
+      {/* AI总结面板（aiVisible时显示）*/}
       {aiVisible&&(
         <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0}}>
           <div style={{padding:"12px 16px",borderBottom:"1px solid #F0F0F0",display:"flex",alignItems:"center",justifyContent:"space-between",background:sharedMode?"linear-gradient(135deg,#F3E5F5 0%,#E8F0FE 100%)":"linear-gradient(135deg,#F0F7FF 0%,#F5F0FF 100%)",flexShrink:0}}>
@@ -1748,7 +1679,8 @@ return (
           </div>
           <div style={{flex:1,overflowY:"auto",padding:"12px 14px",display:"flex",flexDirection:"column",gap:10,minHeight:0}}>
             {aiMessages.map((msg,i)=>{
-              const isPartner=msg.role==="partner";const isUser=msg.role==="user";
+              const isPartner=msg.role==="partner";
+              const isUser=msg.role==="user";
               const partnerColor=sharedMode?.partnerColor||"#36CFC9";
               return(
                 <div key={i} style={{display:"flex",flexDirection:isUser?"row-reverse":"row",alignItems:"flex-start",gap:6}}>
@@ -1774,8 +1706,14 @@ return (
             <div ref={aiEndRef}/>
           </div>
           <div style={{padding:"8px 14px",borderTop:"1px solid #F0F0F0",flexShrink:0}}>
+            <div style={{fontSize:10.5,color:"#999",marginBottom:7}}>快速提问</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {(aiChatId===20?["互动时长怎么折中🎮","嘉宾邀请的建议💡","谁的想法更合理⚖️"]:aiChatId===21?["谁的做法正确⚖️","如何化解冲突🤝"]:aiChatId===4?["作业要求📝","DDL汇总⏰"]:["有哪些DDL⏰","总结待办📝"]).map((q,i)=>(
+              {(
+                aiChatId===20?["互动时长怎么折中🎮","嘉宾邀请的建议💡","谁的想法更合理⚖️"]:
+                aiChatId===21?["谁的做法正确⚖️","如何化解冲突🤝"]:
+                aiChatId===4?["作业要求📝","DDL汇总⏰"]:
+                ["有哪些DDL⏰","总结待办📝"]
+              ).map((q,i)=>(
                 <button key={i} onClick={()=>sendAI(q)} style={{padding:"5px 10px",borderRadius:12,border:"1px solid #E5E8EE",background:"#FAFBFD",color:"#4A90D9",fontSize:11,fontWeight:500,cursor:"pointer"}}>{q}</button>
               ))}
             </div>
@@ -1787,16 +1725,17 @@ return (
         </div>
       )}
 
-      {/* 5个 Tab 面板 */}
+      {/* 5个 Tab 面板（aiVisible=false时显示）*/}
       {!aiVisible&&(
         <>
+          {/* ── Tab 导航（5个）── */}
           <div style={{display:"flex",borderBottom:"1px solid #E5E5E5",background:"#FAFBFD",flexShrink:0,overflowX:"auto"}}>
             {([
-              {key:"schedule",label:"📅 日程",count:0},
-              {key:"capsule",label:"📋 代办",count:pendingCount},
-              {key:"priority",label:"🎯 优先级",count:0},
-              {key:"cross",label:"🔗 跨群",count:0},
-              {key:"profile",label:"👤 了解你",count:aiLearnLog.length},
+              {key:"schedule", label:"📅 日程",  count:0},
+              {key:"capsule",  label:"📋 代办",  count:pendingCount},
+              {key:"priority", label:"🎯 优先级",count:0},
+              {key:"cross",    label:"🔗 跨群",  count:0},
+              {key:"profile",  label:"👤 了解你",count:allLearnLog.filter(l=>l.time!=="历史").length},
             ] as {key:string;label:string;count:number}[]).map(tab=>(
               <button key={tab.key} onClick={()=>setRightTab(tab.key as RightTab)}
                 style={{flex:1,padding:"10px 2px",border:"none",background:rightTab===tab.key?"#fff":"transparent",color:rightTab===tab.key?"#4A90D9":"#666",fontSize:10.5,fontWeight:rightTab===tab.key?700:500,cursor:"pointer",borderBottom:rightTab===tab.key?"2px solid #4A90D9":"2px solid transparent",display:"flex",alignItems:"center",justifyContent:"center",gap:3,whiteSpace:"nowrap"}}>
@@ -1814,13 +1753,16 @@ return (
                 <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:6}}>
                   <button onClick={()=>setWeekStart(addDays(weekStart,-7))} style={{border:"none",background:"transparent",cursor:"pointer",color:"#666",fontSize:16,padding:"0 4px"}}>◀</button>
                   <div style={{flex:1,display:"flex",gap:3}}>
-                    {weekDays.map(d=>{const hasEv=eventDates.has(d);const isToday=d===TODAY;const isSel=d===schDate;return(
-                      <div key={d} onClick={()=>setSchDate(d)} style={{flex:1,textAlign:"center",padding:"4px 2px",borderRadius:6,background:isSel?"#4A90D9":isToday?"#E8F0FE":"transparent",cursor:"pointer",border:isToday&&!isSel?"1px solid #4A90D9":"1px solid transparent"}}>
-                        <div style={{fontSize:10,color:isSel?"#fff":isToday?"#4A90D9":"#999"}}>{getDayName(d)}</div>
-                        <div style={{fontSize:12,fontWeight:isSel?700:400,color:isSel?"#fff":isToday?"#4A90D9":"#333"}}>{d.slice(8)}</div>
-                        {hasEv&&<div style={{width:4,height:4,borderRadius:"50%",background:isSel?"#fff":"#4A90D9",margin:"2px auto 0"}}/>}
-                      </div>
-                    );})}
+                    {weekDays.map(d=>{
+                      const hasEv=eventDates.has(d);const isToday=d===TODAY;const isSel=d===schDate;
+                      return(
+                        <div key={d} onClick={()=>setSchDate(d)} style={{flex:1,textAlign:"center",padding:"4px 2px",borderRadius:6,background:isSel?"#4A90D9":isToday?"#E8F0FE":"transparent",cursor:"pointer",border:isToday&&!isSel?"1px solid #4A90D9":"1px solid transparent"}}>
+                          <div style={{fontSize:10,color:isSel?"#fff":isToday?"#4A90D9":"#999"}}>{getDayName(d)}</div>
+                          <div style={{fontSize:12,fontWeight:isSel?700:400,color:isSel?"#fff":isToday?"#4A90D9":"#333"}}>{d.slice(8)}</div>
+                          {hasEv&&<div style={{width:4,height:4,borderRadius:"50%",background:isSel?"#fff":"#4A90D9",margin:"2px auto 0"}}/>}
+                        </div>
+                      );
+                    })}
                   </div>
                   <button onClick={()=>setWeekStart(addDays(weekStart,7))} style={{border:"none",background:"transparent",cursor:"pointer",color:"#666",fontSize:16,padding:"0 4px"}}>▶</button>
                 </div>
@@ -1834,7 +1776,7 @@ return (
               </div>
               <div style={{flex:1,overflowY:"auto",padding:"10px 12px",display:"flex",flexDirection:"column",gap:7,minHeight:0}}>
                 {dayEvs.length===0?(
-                  <div style={{padding:30,textAlign:"center",color:"#bbb",fontSize:13}}>暂无日程 🐟</div>
+                  <div style={{padding:30,textAlign:"center",color:"#bbb",fontSize:13}}>暂无日程 🐟<br/><span style={{fontSize:11}}>点击「+ 添加」或「📥 导入」</span></div>
                 ):dayEvs.map(ev=>{
                   const pc=prColor(ev.priority);const isHL=highlightId===ev.id;
                   return(
@@ -1843,7 +1785,8 @@ return (
                       <div style={{width:4,borderRadius:2,background:pc,flexShrink:0}}/>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:13,fontWeight:700,color:"#333",display:"flex",alignItems:"center",gap:6}}>
-                          {ev.title}{isHL&&<span style={{fontSize:10,background:pc,color:"#fff",padding:"1px 5px",borderRadius:6,fontWeight:600,flexShrink:0}}>✨新</span>}
+                          {ev.title}
+                          {isHL&&<span style={{fontSize:10,background:pc,color:"#fff",padding:"1px 5px",borderRadius:6,fontWeight:600,flexShrink:0}}>✨新</span>}
                         </div>
                         <div style={{fontSize:10.5,color:"#666",marginTop:2}}>🕒 {ev.startTime}–{ev.endTime}{ev.location&&<span style={{marginLeft:8}}>📍 {ev.location}</span>}</div>
                         {ev.fromCapsule&&<div style={{fontSize:10,color:"#4A90D9",marginTop:2,fontWeight:600}}>📋 来自代办 · {ev.groupName}</div>}
@@ -1859,7 +1802,7 @@ return (
             </div>
           )}
 
-          {/* ── 📋 代办 Tab ── */}
+          {/* ── 📋 代办 Tab（冲突代办点击触发Q仔建议弹窗）── */}
           {rightTab==="capsule"&&(
             <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
               <div style={{padding:"8px 12px",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
@@ -1874,7 +1817,9 @@ return (
               <div style={{flex:1,overflowY:"auto",padding:"8px 12px",display:"flex",flexDirection:"column",gap:8,minHeight:0}}>
                 {filteredCaps.length===0&&<div style={{textAlign:"center",padding:30,color:"#bbb",fontSize:13}}>暂无符合条件的代办</div>}
                 {filteredCaps.map(cap=>{
-                  const st=getCS(cap);const isNew=newCapIds.includes(cap.id);const isFlying=flyingCap===cap.id;
+                  const st=getCS(cap);
+                  const isNew=newCapIds.includes(cap.id);
+                  const isFlying=flyingCap===cap.id;
                   const teacherProfile=TEACHER_PROFILES[cap.from];
                   return(
                     <div key={cap.id} style={{background:st.bg,border:`1.5px solid ${st.border}`,borderRadius:12,padding:"10px 12px",transition:"all 0.4s cubic-bezier(0.34,1.56,0.64,1)",transform:isFlying?"scale(1.04)":"scale(1)",boxShadow:isNew?`0 0 0 2px ${st.border}66,0 4px 14px ${st.border}44`:"0 1px 4px rgba(0,0,0,0.05)"}}>
@@ -1884,8 +1829,11 @@ return (
                         <span style={{fontSize:10,fontWeight:600,color:st.badge,background:st.badge+"22",padding:"1px 7px",borderRadius:8}}>{st.label}</span>
                       </div>
                       <div style={{fontSize:11.5,color:"#3a3a5c",lineHeight:1.55,marginBottom:6,whiteSpace:"pre-line"}}>
-                        {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)?<span style={{color:"#8C8C8C",fontFamily:"monospace"}}>账号：****　密码：****</span>:unlockedCaps.has(cap.id)&&cap.rawContent?cap.rawContent:cap.content}
+                        {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)
+                          ?<span style={{color:"#8C8C8C",fontFamily:"monospace"}}>账号：****　密码：****</span>
+                          :unlockedCaps.has(cap.id)&&cap.rawContent?cap.rawContent:cap.content}
                       </div>
+                      {/* 老师画像标签（可点击展开推断来源）*/}
                       {teacherProfile&&(
                         <div>
                           <div onClick={()=>setShowTeacherEvidence(showTeacherEvidence===cap.from?null:cap.from)}
@@ -1896,10 +1844,11 @@ return (
                           </div>
                           {showTeacherEvidence===cap.from&&(
                             <div style={{background:`${teacherProfile.color}08`,border:`1px solid ${teacherProfile.color}22`,borderRadius:8,padding:"6px 10px",marginBottom:7,fontSize:10.5,color:"#555",lineHeight:1.6}}>
-                              <div style={{fontWeight:600,color:teacherProfile.color,marginBottom:4}}>🤖 Q仔的推断依据</div>
+                              <div style={{fontWeight:600,color:teacherProfile.color,marginBottom:4}}>🤖 Q仔的推断依据（来自聊天记录）</div>
                               {teacherProfile.evidence.map((e,i)=>(
                                 <div key={i} style={{display:"flex",alignItems:"flex-start",gap:5,marginBottom:3}}>
-                                  <span style={{color:teacherProfile.color,flexShrink:0}}>•</span><span>{e}</span>
+                                  <span style={{color:teacherProfile.color,flexShrink:0}}>•</span>
+                                  <span>{e}</span>
                                 </div>
                               ))}
                             </div>
@@ -1913,14 +1862,20 @@ return (
                       )}
                       <div style={{fontSize:10,color:"#999",marginBottom:8}}>📍 {cap.group} · {cap.from} · {cap.time}</div>
                       {cap.type==="sensitive"&&!unlockedCaps.has(cap.id)&&(
-                        <button onClick={()=>{setSensitiveCapId(cap.id);setSensitiveInput("");}} style={{width:"100%",padding:"5px 0",borderRadius:6,border:"none",background:"#8C8C8C",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",marginBottom:6}}>🔓 查看详情（需验证密码）</button>
+                        <button onClick={()=>{setSensitiveCapId(cap.id);setSensitiveInput("");}} style={{width:"100%",padding:"5px 0",borderRadius:6,border:"none",background:"#8C8C8C",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",marginBottom:6}}>
+                          🔓 查看详情（需验证密码）
+                        </button>
                       )}
                       {cap.type!=="confirmed"&&cap.type!=="sensitive"&&(
                         <div style={{display:"flex",gap:6}}>
                           {cap.type==="conflict"?(
-                            <button onClick={()=>openConflictSuggest(cap)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:"linear-gradient(135deg,#FF4D4F,#FF7875)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>🤖 查看Q仔建议</button>
+                            <button onClick={()=>openConflictSuggest(cap)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:"linear-gradient(135deg,#FF4D4F,#FF7875)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                              🤖 查看Q仔建议
+                            </button>
                           ):(
-                            <button onClick={()=>confirmCap(cap.id)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:st.badge,color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>✓ {cap.scheduleData?"确认入日程":"确认"}</button>
+                            <button onClick={()=>confirmCap(cap.id)} style={{flex:1,padding:"5px 0",borderRadius:6,border:"none",background:st.badge,color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                              ✓ {cap.scheduleData?"确认入日程":"确认"}
+                            </button>
                           )}
                           <button onClick={()=>dismissCap(cap.id)} style={{padding:"5px 10px",borderRadius:6,border:`1px solid ${st.border}`,background:"transparent",color:"#999",fontSize:11,cursor:"pointer"}}>✗</button>
                         </div>
@@ -1939,14 +1894,15 @@ return (
             </div>
           )}
 
-          {/* ── 🎯 优先级 Tab ── */}
+          {/* ── 🎯 优先级 Tab（新增优先级偏好树）── */}
           {rightTab==="priority"&&(
             <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
               <div style={{padding:"10px 12px",background:"linear-gradient(135deg,#FFF7E6,#FFF0F5)",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
                 <div style={{fontSize:13,fontWeight:700,color:"#333",marginBottom:6}}>🎯 智能优先级排序</div>
+                {/* 优先级偏好树 */}
                 <div style={{background:"#fff",border:"1px solid #F0E0FF",borderRadius:10,padding:"8px 10px",marginBottom:6}}>
                   <div style={{fontSize:11,fontWeight:700,color:"#9B59B6",marginBottom:6}}>📊 Q仔学习的你的优先级偏好</div>
-                  {PRIORITY_TREE.map((node)=>(
+                  {PRIORITY_TREE.map((node,i)=>(
                     <div key={node.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
                       <div style={{width:20,height:20,borderRadius:"50%",background:node.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#fff",flexShrink:0}}>Lv{node.level}</div>
                       <div style={{flex:1,minWidth:0}}>
@@ -1964,19 +1920,46 @@ return (
                   </div>
                 )}
               </div>
+              {/* 老师画像 */}
+              <div style={{padding:"8px 12px",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
+                <div style={{fontSize:11,fontWeight:700,color:"#666",marginBottom:6}}>👩‍🏫 老师画像（点击查看推断来源）</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  {Object.entries(TEACHER_PROFILES).slice(0,4).map(([name,profile])=>(
+                    <div key={name} onClick={()=>setShowTeacherEvidence(showTeacherEvidence===name?null:name)}
+                      style={{padding:"3px 8px",borderRadius:8,background:`${profile.color}12`,border:`1px solid ${profile.color}33`,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
+                      <span style={{fontSize:10}}>{profile.icon}</span>
+                      <span style={{fontSize:10,color:profile.color,fontWeight:600}}>{name}·{profile.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {showTeacherEvidence&&TEACHER_PROFILES[showTeacherEvidence]&&(
+                  <div style={{marginTop:8,background:`${TEACHER_PROFILES[showTeacherEvidence].color}08`,border:`1px solid ${TEACHER_PROFILES[showTeacherEvidence].color}22`,borderRadius:8,padding:"8px 10px",fontSize:10.5,lineHeight:1.6}}>
+                    <div style={{fontWeight:600,color:TEACHER_PROFILES[showTeacherEvidence].color,marginBottom:4}}>
+                      🤖 Q仔如何推断「{showTeacherEvidence}·{TEACHER_PROFILES[showTeacherEvidence].label}」
+                    </div>
+                    {TEACHER_PROFILES[showTeacherEvidence].evidence.map((e,i)=>(
+                      <div key={i} style={{display:"flex",gap:5,marginBottom:3,color:"#555"}}>
+                        <span style={{color:TEACHER_PROFILES[showTeacherEvidence].color,flexShrink:0}}>•</span>
+                        <span>{e}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* 优先级事项列表（原有逻辑保留）*/}
               <div style={{flex:1,overflowY:"auto",padding:"8px 12px",display:"flex",flexDirection:"column",gap:6,minHeight:0}}>
                 {(()=>{
                   type PItem={id:string;emoji:string;level:string;color:string;title:string;desc:string};
                   const items:PItem[]=[];
-                  const t7="2026-05-07";
+                  const t3="2026-05-02";const t7="2026-05-07";
                   const skipTitles=["国家安全","近现代史","数据结构实验课","操作系统","数据库原理","软件工程","编译原理","人工智能导论"];
                   capsules.forEach(c=>{
-                    if(c.type==="conflict")      items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
-                    else if(c.type==="sensitive") items.push({id:`c${c.id}`,emoji:"⚫",level:"敏感",color:"#8C8C8C",title:c.title,desc:"隐私信息已加密保护"});
+                    if(c.type==="conflict")      items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
+                    else if(c.type==="sensitive") items.push({id:`c${c.id}`,emoji:"⚫",level:"敏感",  color:"#8C8C8C",title:c.title,desc:"隐私信息已加密保护"});
                     else if(c.type==="plan")     items.push({id:`c${c.id}`,emoji:"🔵",level:"方案参考",color:"#3B82F6",title:c.title,desc:c.content.slice(0,55)});
                     else if(c.type==="confirmed")items.push({id:`c${c.id}`,emoji:"🟢",level:"已确认",color:"#52C41A",title:c.title,desc:"已写入日程"});
-                    else if(c.importance==="high")items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
-                    else                          items.push({id:`c${c.id}`,emoji:"🟡",level:"一般",color:"#FAAD14",title:c.title,desc:c.content.slice(0,55)});
+                    else if(c.importance==="high")items.push({id:`c${c.id}`,emoji:"🔴",level:"紧急",  color:"#FF4D4F",title:c.title,desc:c.content.slice(0,55)});
+                    else                         items.push({id:`c${c.id}`,emoji:"🟡",level:"一般",  color:"#FAAD14",title:c.title,desc:c.content.slice(0,55)});
                   });
                   schedule.filter(ev=>!skipTitles.some(s=>ev.title.includes(s))).forEach(ev=>{
                     const desc=`${ev.date.slice(5).replace("-","/")} ${ev.startTime}${ev.location?` · ${ev.location}`:""}`;
@@ -1985,9 +1968,6 @@ return (
                     else                    items.push({id:`s${ev.id}`,emoji:"🟢",level:"已确认",color:"#52C41A",title:ev.title,desc});
                   });
                   const ord:Record<string,number>={紧急:0,敏感:1,重要:2,一般:3,方案参考:4,已确认:5};
-                  const colorMap2:Record<string,string>={紧急:"#FF4D4F",重要:"#FA8C16",一般:"#FAAD14",方案参考:"#3B82F6",已确认:"#52C41A",敏感:"#8C8C8C"};
-                  const emojiMap2:Record<string,string>={紧急:"🔴",重要:"🟠",一般:"🟡",方案参考:"🔵",已确认:"🟢",敏感:"⚫"};
-                  items.forEach(it=>{if(priorityOverrides[it.id]){it.level=priorityOverrides[it.id];it.color=colorMap2[it.level]||it.color;it.emoji=emojiMap2[it.level]||it.emoji;}});
                   const seen=new Set<string>();
                   return items.sort((a,b)=>(ord[a.level]??9)-(ord[b.level]??9)).filter(p=>{if(seen.has(p.title))return false;seen.add(p.title);return true;}).map(item=>{
                     const done=priorityDone.has(item.id);
@@ -2016,28 +1996,29 @@ return (
             </div>
           )}
 
-          {/* ── 🔗 跨群分析 Tab ── */}
+          {/* ── 🔗 跨群分析 Tab（全新）── */}
           {rightTab==="cross"&&(
             <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
               <div style={{padding:"10px 12px",background:"linear-gradient(135deg,#F3E5F5 0%,#E8F0FE 100%)",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
                 <div style={{fontSize:13,fontWeight:700,color:"#333",marginBottom:2}}>🔗 跨群智能分析</div>
-                <div style={{fontSize:10.5,color:"#888",lineHeight:1.5}}>Q仔已整合 <span style={{color:"#7B68EE",fontWeight:600}}>5个群聊 + 课表 + 代办</span></div>
+                <div style={{fontSize:10.5,color:"#888",lineHeight:1.5}}>
+                  Q仔已整合 <span style={{color:"#7B68EE",fontWeight:600}}>5个群聊 + 课表 + 代办</span>，直接提问：
+                </div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:5,marginTop:6}}>
-                  {[
-                    {label:"我今天应该做什么？",q:"我今天应该做什么？"},
-                    {label:"📅 生成本周计划表",q:"我这周要做什么？帮我生成本周计划"},
-                    {label:"最危险的DDL？",q:"最近最危险的DDL是什么？"},
-                  ].map((item,i)=>(
-                    <button key={i} onClick={()=>sendCrossAnalysis(item.q)} style={{padding:"3px 9px",borderRadius:10,border:"1px solid #D3B8E0",background:"#fff",color:"#7B68EE",fontSize:10.5,fontWeight:500,cursor:"pointer"}}>{item.label}</button>
+                  {["我今天应该做什么？","本周最危险的DDL？","我这周能用多少时间？"].map((q,i)=>(
+                    <button key={i} onClick={()=>sendCrossAnalysis(q)} style={{padding:"3px 9px",borderRadius:10,border:"1px solid #D3B8E0",background:"#fff",color:"#7B68EE",fontSize:10.5,fontWeight:500,cursor:"pointer"}}>{q}</button>
                   ))}
                 </div>
               </div>
+              {/* 对话区 */}
               <div style={{flex:1,overflowY:"auto",padding:"12px 14px",display:"flex",flexDirection:"column",gap:10,minHeight:0}}>
                 {crossMessages.map((msg,i)=>{
                   const isUser=msg.role==="user";
                   return(
                     <div key={i} style={{display:"flex",flexDirection:isUser?"row-reverse":"row",alignItems:"flex-start",gap:6}}>
-                      <div style={{width:26,height:26,borderRadius:5,flexShrink:0,background:isUser?"#4A90D9":"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff"}}>{isUser?"我":"Q"}</div>
+                      <div style={{width:26,height:26,borderRadius:5,flexShrink:0,background:isUser?"#4A90D9":"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff"}}>
+                        {isUser?"我":"Q"}
+                      </div>
                       <div style={{maxWidth:"85%"}}>
                         <div style={{padding:"9px 12px",borderRadius:isUser?"10px 4px 10px 10px":"4px 10px 10px 10px",background:isUser?"#A6D8FF":"#F5F7FA",fontSize:12,color:"#333",lineHeight:1.65,whiteSpace:"pre-line",border:`1px solid ${isUser?"transparent":"#E5E8EE"}`}}>
                           {msg.content}
@@ -2049,166 +2030,12 @@ return (
                 {crossLoading&&(
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
                     <div style={{width:26,height:26,borderRadius:5,background:"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff"}}>Q</div>
-                    <div style={{padding:"8px 12px",borderRadius:"4px 10px 10px 10px",background:"#F5F7FA",fontSize:12,color:"#999"}}>Q仔正在跨群分析中…</div>
+                    <div style={{padding:"8px 12px",borderRadius:"4px 10px 10px 10px",background:"#F5F7FA",fontSize:12,color:"#999"}}>Q仔正在跨群分析…</div>
                   </div>
                 )}
-                {/* 本周计划表格 */}
-                {crossShowTable&&!crossLoading&&(
-                  <div style={{background:"#fff",border:"1.5px solid #D3B8E0",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
-                    <div style={{padding:"10px 14px",background:"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",gap:8}}>
-                      <div style={{width:20,height:20,borderRadius:5,background:"rgba(255,255,255,0.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#fff"}}>Q</div>
-                      <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>📅 本周行动计划（AI 生成）</div>
-                      <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.8)"}}>来源：5个群聊 + 课表</div>
-                    </div>
-                    <div style={{display:"grid",gridTemplateColumns:"70px 1fr 72px 62px",background:"#F3E5F5",padding:"6px 10px",gap:6}}>
-                      {["日期","任务","优先级","预计耗时"].map(h=>(
-                        <div key={h} style={{fontSize:10,fontWeight:700,color:"#7B68EE"}}>{h}</div>
-                      ))}
-                    </div>
-                    {WEEKLY_PLAN_ROWS.map((row,i)=>(
-                      <div key={i} style={{display:"grid",gridTemplateColumns:"70px 1fr 72px 62px",padding:"7px 10px",gap:6,background:row.color,borderBottom:"1px solid #F0E0FF",alignItems:"center"}}>
-                        <div style={{fontSize:10,fontWeight:700,color:"#555",lineHeight:1.4}}>{row.date}</div>
-                        <div>
-                          <div style={{fontSize:10.5,color:"#333",lineHeight:1.5}}>{row.task}</div>
-                          <div style={{fontSize:9.5,color:"#999",marginTop:1}}>来源：{row.source}</div>
-                        </div>
-                        <div style={{fontSize:10,fontWeight:700,color:row.priority.includes("🔴")?"#FF4D4F":"#FA8C16"}}>{row.priority}</div>
-                        <div style={{fontSize:10,color:"#666"}}>{row.time}</div>
-                      </div>
-                    ))}
-                    <div style={{padding:"8px 12px",background:"#F8F0FF",borderTop:"1px solid #E8D5FF"}}>
-                      <div style={{fontSize:10,color:"#8B9ABF",lineHeight:1.6,fontStyle:"italic"}}>
-                        🤖 Q仔跨越5个群聊+课表，识别截止日期、固定课程，推算净可用时间 <strong>约16H</strong>，排列优先级后生成此计划。这些信息全部来自聊天，无需手动录入。
-                      </div>
-                      <button onClick={()=>setCrossShowTable(false)} style={{marginTop:6,padding:"3px 10px",borderRadius:8,border:"1px solid #D3B8E0",background:"transparent",color:"#9B59B6",fontSize:10,cursor:"pointer"}}>收起表格</button>
-                    </div>
-                  </div>
-                )}
-                                {/* 跨群智能分析卡片（仿上一版弹窗样式，内嵌 Tab）*/}
-                                {crossShowCard&&!crossLoading&&(
-                  <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:4}}>
-
-                    {/* AI 原生说明 */}
-                    <div style={{background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1.5px solid #D3B8E0",borderRadius:12,padding:"12px 14px"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#7B68EE",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
-                        <div style={{width:20,height:20,borderRadius:5,background:"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#fff"}}>Q</div>
-                        这是 AI 才能做到的事
-                      </div>
-                      <div style={{fontSize:11,color:"#555",lineHeight:1.6}}>
-                        Q仔同时读取了你的 5 个群聊 + 课表 + 代办，发现了以下你自己没有意识到的时间冲突和风险。普通日历只能看到你手动输入的事，Q仔能理解聊天里产生的时间。
-                      </div>
-                    </div>
-
-                    {/* 高风险日 */}
-                    <div style={{background:"#FFF1F0",border:"2px solid #FF7875",borderRadius:12,padding:"12px 14px"}}>
-                      <div style={{fontSize:13,fontWeight:800,color:"#FF4D4F",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
-                        <span style={{fontSize:16}}>🚨</span> 高风险日：5月6日（周三）
-                      </div>
-                      {/* 风险事项列表 */}
-                      {[
-                        {title:"计网作业截止 23:59",tag:"必须",tagColor:"#FF4D4F",source:"计算机网络 · 课程群",warn:"张老师：从不延期，本学期第3次提醒"},
-                        {title:"初赛材料提交 23:59",tag:"必须",tagColor:"#FF4D4F",source:"Team Phoenix · 创新赛",warn:"队友周：PPT v3仍有待优化问题"},
-                        {title:"实验3答辩（次日14:00）",tag:"需提前准备",tagColor:"#FA8C16",source:"操作系统课程群",warn:"助教：需要5分钟PPT，10分钟提问"},
-                      ].map((item,i)=>(
-                        <div key={i} style={{background:"rgba(255,77,79,0.06)",border:`1px solid ${item.tagColor}33`,borderRadius:8,padding:"8px 10px",marginBottom:8,borderLeft:`3px solid ${item.tagColor}`}}>
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                            <span style={{fontSize:12,fontWeight:700,color:"#333"}}>{item.title}</span>
-                            <span style={{fontSize:9,background:item.tagColor,color:"#fff",padding:"1px 5px",borderRadius:5,fontWeight:700,flexShrink:0}}>{item.tag}</span>
-                          </div>
-                          <div style={{fontSize:10.5,color:"#666",marginBottom:3}}>来源：{item.source}</div>
-                          <div style={{fontSize:10.5,color:item.tagColor,fontWeight:600}}>⚠️ {item.warn}</div>
-                        </div>
-                      ))}
-                      {/* Q仔时间测算 */}
-                      <div style={{background:"rgba(255,77,79,0.06)",borderRadius:8,padding:"8px 10px",marginTop:4}}>
-                        <div style={{fontSize:11.5,fontWeight:700,color:"#FF4D4F",marginBottom:6,display:"flex",alignItems:"center",gap:4}}>
-                          <div style={{width:16,height:16,borderRadius:4,background:"linear-gradient(135deg,#9B59B6,#4A90D9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:700,color:"#fff"}}>Q</div>
-                          Q仔时间测算
-                        </div>
-                        {[
-                          "本周（4/29-5/6）你有效工作时间约 28小时",
-                          "课程占用：16小时  |  组会占用：3小时",
-                          "可用于两项截止任务的净时间：约 4-5小时",
-                          "计网作业（3000字）预计需3h  |  创新赛PPT优化预计需2h",
-                        ].map((line,i)=>(
-                          <div key={i} style={{fontSize:11,color:"#555",lineHeight:1.6}}>· {line}</div>
-                        ))}
-                        <div style={{fontSize:11.5,fontWeight:700,color:"#FF4D4F",marginTop:6}}>
-                          · 结论：时间非常紧张，两件事均不能拖到最后一天。
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 行动建议 */}
-                    <div style={{background:"#F6FFED",border:"1.5px solid #95DE64",borderRadius:12,padding:"12px 14px"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#52C41A",marginBottom:10}}>💡 Q仔的行动建议（按优先级）</div>
-                      {[
-                        {day:"今晚（4/29）",color:"#FF4D4F",dot:"🔴",action:"先完成课题组组会（必须），晚上开始写计网作业框架"},
-                        {day:"4/30–5/3",color:"#FA8C16",dot:"🟠",action:"每天1小时写计网作业；五一假期利用好，5/3前完成初稿"},
-                        {day:"5/4–5/5",color:"#FA8C16",dot:"🟠",action:"创新赛PPT优化：补充商业模式和用户画像，5/5定稿留buffer"},
-                        {day:"5/6 白天",color:"#52C41A",dot:"🟢",action:"计网最终检查并提交（双平台），下午准备操作系统答辩"},
-                      ].map((item,i)=>(
-                        <div key={i} style={{display:"flex",gap:8,padding:"6px 0",borderBottom:i<3?"1px dashed #D9F7BE":"none"}}>
-                          <span style={{fontSize:13,flexShrink:0}}>{item.dot}</span>
-                          <div>
-                            <div style={{fontSize:11,fontWeight:700,color:item.color,marginBottom:2}}>{item.day}</div>
-                            <div style={{fontSize:11.5,color:"#333",lineHeight:1.4}}>{item.action}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* 本周其他事项 */}
-                    <div style={{background:"#FFFBE6",border:"1.5px solid #FFD591",borderRadius:12,padding:"12px 14px"}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#FA8C16",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
-                        <span style={{fontSize:14}}>📅</span> 本周其他事项（Q仔已归档）
-                      </div>
-                      {[
-                        {icon:"🔬",title:"课题组组会 16:30-19:30",sub:"今天 4/29 · 翁老师重视中间数据展示"},
-                        {icon:"✈️",title:"重庆出行 MU5435（延误监控中）",sub:"5/10 周六 · 航班延误40分钟，已生成代办"},
-                        {icon:"🎓",title:"班级团建 紫金山徒步",sub:"5/18 周日 · 与创新创业讲座冲突，需取舍"},
-                        {icon:"🌿",title:"志愿服务 图书馆整理",sub:"5/12 周一 · 已报名，需要8:00到位"},
-                      ].map((item,i)=>(
-                        <div key={i} style={{display:"flex",gap:10,padding:"7px 0",borderBottom:i<3?"1px dashed #FFE58F":"none",alignItems:"flex-start"}}>
-                          <span style={{fontSize:18,flexShrink:0,lineHeight:1.3}}>{item.icon}</span>
-                          <div>
-                            <div style={{fontSize:12,fontWeight:700,color:"#333",marginBottom:2}}>{item.title}</div>
-                            <div style={{fontSize:11,color:"#888"}}>{item.sub}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Q仔做了什么 总结 */}
-                    <div style={{background:"#F5F5F5",borderRadius:10,padding:"10px 12px"}}>
-                      <div style={{fontSize:11,color:"#666",lineHeight:1.7}}>
-                        <span style={{fontWeight:700,color:"#9B59B6"}}>📌 Q仔做了什么：</span>
-                        跨越「计网群」「竞赛群」「课题组群」「班级群」「出行聊天」5个来源，识别出3个同天截止的事项，推算了你的净可用时间，生成了分天行动计划。<span style={{color:"#FF4D4F",fontWeight:600}}>这些信息没有一条是你手动录入的——全部来自聊天。</span>
-                      </div>
-                    </div>
-
-                    {/* 底部按钮 */}
-                    <div style={{display:"flex",gap:8}}>
-                      <button onClick={()=>{setRightTab("priority");setCrossShowCard(false);}} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#9B59B6,#4A90D9)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer"}}>查看优先级安排 →</button>
-                      <button onClick={()=>setCrossShowCard(false)} style={{padding:"10px 16px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:12,cursor:"pointer"}}>关闭</button>
-                    </div>
-
-                    {/* 数据来源标注 */}
-                    <div style={{background:"#F5F5F5",borderRadius:8,padding:"8px 12px"}}>
-                      <div style={{fontSize:10,color:"#888",lineHeight:1.7}}>
-                        📌 <strong>Q仔整合了哪些来源：</strong><br/>
-                        [计网DDL] 计算机网络群 · 张老师 · 4/25&nbsp;&nbsp;
-                        [初赛截止] Team Phoenix · 队友周 · 今天&nbsp;&nbsp;
-                        [组会] 课题组 · 翁一士 · 今天&nbsp;&nbsp;
-                        [答辩] 操作系统群 · 助教 · 昨天
-                      </div>
-                      <button onClick={()=>setCrossShowCard(false)} style={{marginTop:6,padding:"3px 10px",borderRadius:8,border:"1px solid #d0d0d0",background:"transparent",color:"#888",fontSize:10,cursor:"pointer"}}>收起分析</button>
-                    </div>
-
-                  </div>
-                )}
-
                 <div ref={crossEndRef}/>
               </div>
+              {/* 输入区 */}
               <div style={{padding:"10px 12px",borderTop:"1px solid #F0F0F0",display:"flex",gap:6,flexShrink:0}}>
                 <input value={crossInput} onChange={e=>setCrossInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&crossInput.trim())sendCrossAnalysis();}} placeholder="问问 Q仔，比如：我今天该做什么？" style={{flex:1,height:32,padding:"0 10px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:12,outline:"none",color:"#333"}}/>
                 <button onClick={()=>sendCrossAnalysis()} style={{padding:"0 12px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#9B59B6,#4A90D9)",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer"}}>发送</button>
@@ -2216,16 +2043,16 @@ return (
             </div>
           )}
 
-          {/* ── 👤 了解你 Tab（原版设计还原）── */}
+          {/* ── 👤 了解你 Tab（含学习日志）── */}
           {rightTab==="profile"&&(
             <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minHeight:0}}>
               <div style={{padding:"10px 12px",background:"linear-gradient(135deg,#F3E5F5 0%,#E8F0FE 100%)",borderBottom:"1px solid #F0F0F0",flexShrink:0}}>
                 <div style={{fontSize:13,fontWeight:800,color:"#7B68EE",marginBottom:2}}>🧠 Q仔对你的了解</div>
                 <div style={{fontSize:11,color:"#888"}}>基于近7天的真实交互行为，持续更新中</div>
-                {aiLearnLog.length>0&&(
+                {allLearnLog.filter(l=>l.time!=="历史").length>0&&(
                   <div style={{marginTop:6,display:"flex",alignItems:"center",gap:6}}>
                     <span style={{width:7,height:7,borderRadius:"50%",background:"#52C41A",display:"inline-block",boxShadow:"0 0 6px #52C41A"}}/>
-                    <span style={{fontSize:10.5,color:"#52C41A",fontWeight:600}}>本次会话新增 {aiLearnLog.length} 条学习记录</span>
+                    <span style={{fontSize:10.5,color:"#52C41A",fontWeight:600}}>本次会话新增 {allLearnLog.filter(l=>l.time!=="历史").length} 条学习记录</span>
                   </div>
                 )}
               </div>
@@ -2237,14 +2064,15 @@ return (
                     <div key={i} style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
                       <div style={{fontSize:11,color:"#333",width:64,flexShrink:0,fontWeight:i===0?700:400}}>{t.label}</div>
                       <div style={{flex:1,height:14,background:"#FFE7BA",borderRadius:7,overflow:"hidden"}}>
-                        <div style={{height:"100%",width:`${(t.stars/5)*100}%`,background:"linear-gradient(90deg,#FA8C16,#FFB340)",borderRadius:7,transition:"width 0.8s ease"}}/>
+                        <div style={{height:"100%",width:`${(t.stars/5)*100}%`,background:"linear-gradient(90deg,#FA8C16,#FFB340)",borderRadius:7}}/>
                       </div>
                       <div style={{fontSize:9,color:"#FA8C16",fontWeight:700,flexShrink:0}}>{"★".repeat(t.stars)+"☆".repeat(5-t.stars)}</div>
                     </div>
                   ))}
-                  <div style={{fontSize:10,color:"#999",marginTop:4,fontStyle:"italic"}}>🤖 Q仔通过你过去的确认/忽略行为推断</div>
+                  <div style={{fontSize:10,color:"#999",marginTop:4,fontStyle:"italic"}}>🤖 通过你过去的确认/忽略行为推断</div>
                 </div>
-                {/* 日常习惯 */}
+
+                {/* 处理习惯 */}
                 <div style={{background:"#F0F9FF",border:"1px solid #BAE0FF",borderRadius:10,padding:"10px 12px"}}>
                   <div style={{fontSize:12,fontWeight:700,color:"#4A90D9",marginBottom:8}}>⏰ 你的处理习惯</div>
                   {PROFILE_DATA.habits.map((h,i)=>(
@@ -2253,42 +2081,16 @@ return (
                       <span style={{fontSize:11.5,color:"#333"}}>{h}</span>
                     </div>
                   ))}
-                  <div style={{fontSize:10,color:"#999",marginTop:4,fontStyle:"italic"}}>🤖 Q仔通过你的确认时间规律推断</div>
+                  <div style={{fontSize:10,color:"#999",marginTop:4,fontStyle:"italic"}}>🤖 通过你的确认时间规律推断</div>
                 </div>
-                {/* 老师风格画像 */}
-                <div style={{background:"#F9F0FF",border:"1px solid #D3ADF7",borderRadius:10,padding:"10px 12px"}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"#9B59B6",marginBottom:8}}>👩‍🏫 老师风格画像</div>
-                  {PROFILE_DATA.teacherStyles.map((t,i)=>(
-                    <div key={i} style={{marginBottom:8}}>
-                      <div onClick={()=>setShowTeacherEvidence(showTeacherEvidence===t.name?null:t.name)}
-                        style={{display:"flex",alignItems:"flex-start",gap:8,padding:"6px 8px",background:`${t.color}10`,borderRadius:7,border:`1px solid ${t.color}33`,cursor:"pointer"}}>
-                        <div style={{flex:1}}>
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                            <span style={{fontSize:11.5,fontWeight:700,color:t.color}}>{t.name}</span>
-                            <span style={{fontSize:9,padding:"1px 5px",borderRadius:6,background:t.color,color:"#fff",fontWeight:600}}>{t.tag}</span>
-                            <span style={{fontSize:9,color:t.color,opacity:0.7,marginLeft:"auto"}}>{showTeacherEvidence===t.name?"▲":"▼ 查看依据"}</span>
-                          </div>
-                          <div style={{fontSize:10.5,color:"#555"}}>{t.detail}</div>
-                        </div>
-                      </div>
-                      {showTeacherEvidence===t.name&&TEACHER_PROFILES[t.name]&&(
-                        <div style={{background:`${t.color}08`,border:`1px solid ${t.color}22`,borderRadius:"0 0 8px 8px",padding:"6px 10px",fontSize:10.5,color:"#555",lineHeight:1.6}}>
-                          <div style={{fontWeight:600,color:t.color,marginBottom:4}}>🤖 Q仔从以下消息推断：</div>
-                          {TEACHER_PROFILES[t.name].evidence.map((e,ei)=>(
-                            <div key={ei} style={{display:"flex",gap:5,marginBottom:3}}><span style={{color:t.color,flexShrink:0}}>•</span><span>{e}</span></div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <div style={{fontSize:10,color:"#999",fontStyle:"italic"}}>🤖 Q仔通过群聊消息频率与措辞分析推断 · 点击查看依据</div>
-                </div>
+
                 {/* 提醒风格偏好 */}
                 <div style={{background:"#F6FFED",border:"1px solid #95DE64",borderRadius:10,padding:"10px 12px"}}>
                   <div style={{fontSize:12,fontWeight:700,color:"#52C41A",marginBottom:8}}>💬 你的提醒偏好</div>
                   <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
                     {["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"].map((s,i)=>{
-                      const cnt=reminderStyleCounts[i]||0;const isRec=i===aiRecommendedStyleIdx;
+                      const cnt=reminderStyleCounts[i]||0;
+                      const isRec=i===aiRecommendedStyleIdx;
                       return(
                         <div key={i} style={{flex:"1 0 40%",padding:"5px 8px",borderRadius:8,background:isRec?"#52C41A":"#F5F5F5",border:`1.5px solid ${isRec?"#52C41A":"#d9d9d9"}`}}>
                           <div style={{fontSize:10.5,fontWeight:isRec?700:400,color:isRec?"#fff":"#333"}}>{s}{isRec&&" ⭐"}</div>
@@ -2298,27 +2100,18 @@ return (
                     })}
                   </div>
                   <div style={{fontSize:10.5,color:"#52C41A",fontWeight:600}}>
-                    🤖 Q仔推荐：「{["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"][aiRecommendedStyleIdx]}」（响应率最高，{reminderStyleCounts[aiRecommendedStyleIdx]}/{totalStyleUses}次）
+                    🤖 Q仔推荐：「{["温柔学姐风","毒舌室友风","佛系朋友风","正经班委风"][aiRecommendedStyleIdx]}」（{reminderStyleCounts[aiRecommendedStyleIdx]}/{totalStyleUses}次）
                   </div>
                 </div>
-                {/* Q仔本周建议 */}
-                <div style={{background:"linear-gradient(135deg,#FFF7E6,#FFF0F5)",border:"1px solid #FFB340",borderRadius:10,padding:"10px 12px"}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"#FA8C16",marginBottom:6}}>💡 Q仔本周建议</div>
-                  <div style={{fontSize:12,color:"#333",lineHeight:1.6}}>{PROFILE_DATA.suggestion}</div>
-                  <div style={{display:"flex",gap:6,marginTop:8}}>
-                    <button onClick={()=>setRightTab("cross")} style={{flex:1,padding:"5px 10px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#FA8C16,#FFB340)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>📊 查看跨群分析 →</button>
-                    <button onClick={()=>{setRightTab("cross");setTimeout(()=>sendCrossAnalysis("我这周要做什么？帮我生成本周计划"),300);}} style={{flex:1,padding:"5px 10px",borderRadius:8,border:"1.5px solid #FA8C16",background:"transparent",color:"#FA8C16",fontSize:11,fontWeight:600,cursor:"pointer"}}>📅 生成本周计划表</button>
-                  </div>
-                </div>
-                {/* Q仔学习记录 */}
+
+                {/* 📚 Q仔学习日志（新增）*/}
                 <div style={{background:"#FAFBFD",border:"1px solid #E5E8EE",borderRadius:10,padding:"10px 12px"}}>
                   <div style={{fontSize:12,fontWeight:700,color:"#666",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
-                    📝 Q仔学习记录
-                    {aiLearnLog.length>0&&<span style={{fontSize:9,background:"#52C41A",color:"#fff",padding:"1px 5px",borderRadius:6}}>+{aiLearnLog.length} 新</span>}
+                    📚 Q仔学习日志
+                    {allLearnLog.filter(l=>l.time!=="历史").length>0&&<span style={{fontSize:9,background:"#52C41A",color:"#fff",padding:"1px 5px",borderRadius:6}}>本次会话 +{allLearnLog.filter(l=>l.time!=="历史").length}</span>}
                   </div>
-                  {allLearnLog.length===0&&<div style={{fontSize:11,color:"#bbb",textAlign:"center",padding:"10px 0"}}>暂无学习记录，开始使用Q仔后自动记录</div>}
-                  {allLearnLog.slice(0,8).map((l,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:5,padding:"4px 0",borderBottom:i<Math.min(allLearnLog.length,8)-1?"1px dashed #F0F0F0":"none"}}>
+                  {allLearnLog.slice(0,10).map((l,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:6,padding:"5px 8px",background:l.time!=="历史"?"#F0FFF4":"transparent",borderRadius:6,border:l.time!=="历史"?"1px solid #B7EB8F":"none"}}>
                       <span style={{fontSize:12,flexShrink:0}}>{"icon" in l?(l as LearningEntry).icon:"✓"}</span>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:11,color:"#333",lineHeight:1.4}}>{l.content}</div>
@@ -2326,7 +2119,7 @@ return (
                       </div>
                     </div>
                   ))}
-                  <div style={{fontSize:10,color:"#bbb",marginTop:6,textAlign:"center"}}>每次你确认/调整/忽略代办，Q仔都会记录并学习</div>
+                  <div style={{fontSize:10,color:"#bbb",marginTop:4,textAlign:"center"}}>每次你确认/调整/忽略，Q仔都会学习</div>
                 </div>
               </div>
             </div>
@@ -2335,26 +2128,31 @@ return (
       )}
     </div>
 
-    {/* ══ 演示控制台（3模块）══ */}
+    {/* ══════════════════════════════════════════════════════
+        演示控制条（重构为3模块）
+    ══════════════════════════════════════════════════════ */}
     <div style={{position:"fixed",left:demoBarPos.x,bottom:demoBarPos.y,background:"rgba(255,255,255,0.97)",border:"1px solid #E5E5E5",borderRadius:18,padding:"8px 14px",display:"flex",flexDirection:"column",gap:6,alignItems:"stretch",boxShadow:"0 8px 32px rgba(0,0,0,0.12)",zIndex:1000,userSelect:"none"}}>
       <div onMouseDown={e=>setDemoBarDrag({startX:e.clientX,startY:e.clientY,origX:demoBarPos.x,origY:demoBarPos.y})}
         style={{cursor:demoBarDrag?"grabbing":"grab",alignSelf:"center",padding:"2px 6px",fontSize:13,color:"#999",display:"flex",alignItems:"center",gap:4}}>
         🎮 <span style={{fontSize:10,color:"#bbb"}}>演示控制台</span>
       </div>
+      {/* 模块一：智能检索 */}
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:10,color:"#4A90D9",fontWeight:700,width:68,flexShrink:0}}>🔍 一·记忆</span>
         <div style={{display:"flex",gap:4}}>
           <button onClick={simSmartSearch} style={{padding:"5px 10px",borderRadius:10,border:"1.5px solid #4A90D955",background:"#4A90D915",color:"#4A90D9",fontSize:11,fontWeight:600,cursor:"pointer"}}>智能检索</button>
         </div>
       </div>
+      {/* 模块二：智能排期 */}
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:10,color:"#FA8C16",fontWeight:700,width:68,flexShrink:0}}>📋 二·行动</span>
         <div style={{display:"flex",gap:4}}>
+          <button onClick={simGroupSetup} style={{padding:"5px 10px",borderRadius:10,border:"1.5px solid #FA8C1655",background:"#FA8C1615",color:"#FA8C16",fontSize:11,fontWeight:600,cursor:"pointer"}}>授权设置</button>
           <button onClick={simDDL} style={{padding:"5px 10px",borderRadius:10,border:"1.5px solid #FA8C1655",background:"#FA8C1615",color:"#FA8C16",fontSize:11,fontWeight:600,cursor:"pointer"}}>自动抓取</button>
-          <button onClick={simConflictDemo} style={{padding:"5px 10px",borderRadius:10,border:"1.5px solid #FF4D4F55",background:"#FF4D4F15",color:"#FF4D4F",fontSize:11,fontWeight:600,cursor:"pointer"}}>冲突检测</button>
           <button onClick={simCrossAnalysis} style={{padding:"5px 10px",borderRadius:10,border:"1.5px solid #9B59B655",background:"#9B59B615",color:"#9B59B6",fontSize:11,fontWeight:600,cursor:"pointer"}}>跨群分析</button>
         </div>
       </div>
+      {/* 模块三：协作分析 */}
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:10,color:"#36CFC9",fontWeight:700,width:68,flexShrink:0}}>🤝 三·协作</span>
         <div style={{display:"flex",gap:4}}>
@@ -2372,36 +2170,14 @@ return (
         const ev=schedule.find(e=>e.id===rc.evId)||schedule.find(e=>e.title.includes("计网"))||null;
         const styleNames=["温柔学姐","毒舌室友","佛系朋友","正经班委"];
         const sname=styleNames[rc.styleIdx]||"毒舌室友";
-        const styleText=ev?(getReminderStyles(ev)[rc.styleIdx]?.text||`提醒：「${rc.evTitle}」今日截止！`):`提醒：「${rc.evTitle}」截止今日23:59！`;
-        setCapsules(p=>p.map(c=>{
-          if(c.title.includes("计网作业")||c.title.includes("第三章作业")||c.title.includes("作业补充要求")){
-            return {...c,importance:"high" as Priority,scheduleData:c.scheduleData?{...c.scheduleData,priority:"high" as Priority,color:"#FFF1F0"}:undefined};
-          }
-          return c;
-        }));
-        setSchedule(p=>p.map(s=>{if(s.title.includes("计网作业"))return {...s,priority:"high" as Priority,color:"#FFF1F0"};return s;}));
+        const styleText=ev?(getReminderStyles(ev)[rc.styleIdx]?.text||`提醒：「${rc.evTitle}」今日截止！`):`提醒：「${rc.evTitle}」截止今日 23:59！`;
         setTimeJumped(true);setActiveChat(9);setUnreadMap(p=>({...p,9:0}));
         showToast(`⏩ 时间快进至 5月6日 ${rc.sendTime}`,"#7B68EE");
         setTimeout(()=>{
-          const nm:Message={id:Date.now(),sender:"Q仔",isAI:true,
-            content:`⏰【自动提醒 · ${sname}风】\n\n${styleText}\n\n──\n📅 发送时间：5月6日 ${rc.sendTime}\n🤖 提醒风格由 Q仔 根据响应历史自动选择`,
-            time:rc.sendTime,self:false,date:"5月6日 周三"};
+          const nm:Message={id:Date.now(),sender:"Q仔",isAI:true,content:`⏰【自动提醒 · ${sname}风】\n\n${styleText}\n\n──\n📅 发送时间：5月6日 ${rc.sendTime}\n🤖 提醒风格由 Q仔 根据响应历史自动选择`,time:rc.sendTime,self:false,date:"5月6日 周三"};
           setMessages(p=>({...p,9:[...(p[9]||[]),nm]}));
           setAlertBanner(true);
         },600);
-        // 快进后 2.8 秒触发冲突弹窗
-        setTimeout(()=>{
-          if(!showConflictSuggest){
-            setConflictSuggestion({
-              capId:103,
-              keep:"创新赛内部评审（周六 14:30）",
-              cancel:"摄影社外拍（周六 14:00·情人谷）",
-              reason:"根据你过去 3 次冲突时的选择记录，竞赛类优先级高于社团活动。Q仔判断：创新赛初赛还剩7天，评审是关键节点；摄影社外拍可提前联系社长请假，影响可控。",
-            });
-            setShowConflictSuggest(true);
-            showToast("🔴 Q仔发现冲突：摄影社外拍 vs 创新赛评审","#FF4D4F");
-          }
-        },2800);
       }} style={{width:60,height:60,borderRadius:"50%",background:timeJumped?"#8C8C8C":"linear-gradient(135deg,#FF6B6B,#FF4D4F)",color:"#fff",border:"none",cursor:timeJumped?"default":"pointer",boxShadow:`0 4px 20px ${timeJumped?"rgba(0,0,0,0.15)":"rgba(255,77,79,0.5)"}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
         <span style={{fontSize:18}}>⏩</span>
         <span style={{fontSize:9,fontWeight:700}}>{timeJumped?"已快进":"快进"}</span>
@@ -2409,17 +2185,23 @@ return (
       <div style={{fontSize:9,color:"#999",textAlign:"center",lineHeight:1.3}}>快进至<br/>5月6日</div>
     </div>
 
-    {/* ══ 弹窗区 ══ */}
+    {/* ══════════════════════════════════════════════════════
+        弹窗区
+    ══════════════════════════════════════════════════════ */}
 
-    {/* 群权限设置弹窗 */}
+    {/* ── 群组权限设置弹窗（新增）── */}
     {showGroupSetup&&setupGroupId!==null&&(()=>{
-      const chat=CHATS.find(c=>c.id===setupGroupId);const isOn=monitoredGroups.has(setupGroupId);
+      const chat=CHATS.find(c=>c.id===setupGroupId);
+      const isOn=monitoredGroups.has(setupGroupId);
       return(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setShowGroupSetup(false)}>
           <div style={{background:"#fff",borderRadius:16,padding:"24px",width:400,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18}}>
               <div style={{width:40,height:40,borderRadius:8,background:chat?.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff"}}>{chat?.avatar}</div>
-              <div><div style={{fontSize:14,fontWeight:700,color:"#333"}}>{chat?.name}</div><div style={{fontSize:11,color:"#999"}}>⚙️ Q仔权限设置</div></div>
+              <div>
+                <div style={{fontSize:14,fontWeight:700,color:"#333"}}>{chat?.name}</div>
+                <div style={{fontSize:11,color:"#999"}}>⚙️ Q仔权限设置</div>
+              </div>
             </div>
             <div style={{background:"#F0F7FF",border:"1.5px solid #BAE0FF",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
@@ -2427,14 +2209,22 @@ return (
                   <div style={{fontSize:13,fontWeight:600,color:"#333"}}>开启 Q仔 自动监听</div>
                   <div style={{fontSize:11,color:"#666",marginTop:2}}>开启后，Q仔 将在此群内自动识别 DDL、调课、活动等信息</div>
                 </div>
+                {/* 开关 */}
                 <div onClick={()=>toggleMonitor(setupGroupId)} style={{width:44,height:24,borderRadius:12,background:isOn?"#1677FF":"#d9d9d9",cursor:"pointer",position:"relative",transition:"background 0.3s",flexShrink:0}}>
                   <div style={{position:"absolute",top:3,left:isOn?22:3,width:18,height:18,borderRadius:"50%",background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,0.2)",transition:"left 0.3s"}}/>
                 </div>
               </div>
-              {isOn&&<div style={{fontSize:10.5,color:"#1677FF",background:"#E6F4FF",padding:"4px 8px",borderRadius:6,display:"flex",alignItems:"center",gap:4}}><span style={{width:5,height:5,borderRadius:"50%",background:"#1677FF",display:"inline-block"}}/>Q仔 仅读取你明确授权的群聊，不监听其他内容</div>}
+              {isOn&&(
+                <div style={{fontSize:10.5,color:"#1677FF",background:"#E6F4FF",padding:"4px 8px",borderRadius:6,display:"flex",alignItems:"center",gap:4}}>
+                  <span style={{width:5,height:5,borderRadius:"50%",background:"#1677FF",display:"inline-block"}}/>
+                  Q仔 仅读取你明确授权的群聊，不监听其他内容
+                </div>
+              )}
             </div>
             <div style={{background:"#FFFBE6",border:"1px solid #FFE58F",borderRadius:8,padding:"8px 12px",marginBottom:16}}>
-              <div style={{fontSize:10.5,color:"#666",lineHeight:1.6}}>🔒 <strong>隐私说明</strong>：Q仔 不读取所有聊天，仅处理你授权的群聊内容。所有数据在用户确认前不写入任何系统。</div>
+              <div style={{fontSize:10.5,color:"#666",lineHeight:1.6}}>
+                🔒 <strong>隐私说明</strong>：Q仔 不读取所有聊天，仅处理你授权的群聊内容。所有数据在用户确认前不写入任何系统。
+              </div>
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={saveGroupSetup} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#1677FF,#4A90D9)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>保存设置</button>
@@ -2445,12 +2235,13 @@ return (
       );
     })()}
 
-    {/* 冲突解决 Q仔建议弹窗 */}
+    {/* ── 冲突解决 Q仔建议弹窗（新增）── */}
     {showConflictSuggest&&conflictSuggestion&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setShowConflictSuggest(false)}>
         <div style={{background:"#fff",borderRadius:16,padding:"24px",width:420,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
           <div style={{fontSize:15,fontWeight:800,color:"#FF4D4F",marginBottom:4}}>⚠️ 时间冲突 · Q仔建议</div>
           <div style={{fontSize:11,color:"#999",marginBottom:16}}>基于你的优先级偏好，Q仔给出以下建议</div>
+          {/* Q仔建议 */}
           <div style={{background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1.5px solid #D3B8E0",borderRadius:12,padding:"14px 16px",marginBottom:14}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
               <div style={{width:24,height:24,borderRadius:6,background:"linear-gradient(135deg,#4A90D9,#9B59B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff"}}>Q</div>
@@ -2470,19 +2261,22 @@ return (
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={handleConflictAccept} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#52C41A,#73D13D)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>✅ 接受建议</button>
-            <button onClick={()=>{setShowConflictSuggest(false);showToast("📝 你可以在代办卡片手动确认/忽略","#666");}} style={{flex:1,padding:"10px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>🔄 我来决定</button>
+            <button onClick={()=>{setShowConflictSuggest(false);showToast("📝 你可以手动在代办卡片下方确认/忽略","#666");}} style={{flex:1,padding:"10px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>🔄 我来决定</button>
           </div>
           <div style={{fontSize:10,color:"#bbb",textAlign:"center",marginTop:8}}>接受建议后 Q仔 将记录此次偏好，下次自动参考</div>
         </div>
       </div>
     )}
 
-    {/* 智能提醒弹窗 */}
+    {/* ── 智能提醒弹窗 ── */}
     {reminderEv&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000}} onClick={()=>{setReminderEv(null);setSentReminder(false);}}>
         <div style={{background:"#fff",borderRadius:16,padding:"26px",width:440,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
           <div style={{fontSize:15,fontWeight:800,color:"#333",marginBottom:4}}>💬 生成提醒文案</div>
-          <div style={{fontSize:12,color:"#4A90D9",background:"#EFF6FF",padding:"6px 10px",borderRadius:8,marginBottom:10,fontWeight:500}}>针对：{reminderEv.title}　{reminderEv.date.slice(5).replace("-","/")} {reminderEv.startTime}</div>
+          <div style={{fontSize:12,color:"#4A90D9",background:"#EFF6FF",padding:"6px 10px",borderRadius:8,marginBottom:10,fontWeight:500}}>
+            针对：{reminderEv.title}　{reminderEv.date.slice(5).replace("-","/")} {reminderEv.startTime}
+          </div>
+          {/* AI预选推荐横幅 */}
           <div style={{background:"linear-gradient(135deg,#F0F7FF,#F3E5F5)",border:"1.5px solid #BAE0FF",borderRadius:10,padding:"8px 12px",marginBottom:14,display:"flex",gap:8,alignItems:"flex-start"}}>
             <div style={{width:22,height:22,borderRadius:6,background:"linear-gradient(135deg,#4A90D9,#9B59B6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>Q</div>
             <div style={{fontSize:11,color:"#555",lineHeight:1.5}}>
@@ -2504,11 +2298,17 @@ return (
             <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
               {(["1h","3h","custom"] as const).map(opt=>{
                 const lbs={"1h":"截止前1小时","3h":"截止前3小时","custom":"自定义时间"};
-                return <button key={opt} onClick={()=>setReminderTimeOpt(opt)} style={{padding:"4px 10px",borderRadius:8,border:`1.5px solid ${reminderTimeOpt===opt?"#4A90D9":"#E5E8EE"}`,background:reminderTimeOpt===opt?"#E8F0FE":"#fff",color:reminderTimeOpt===opt?"#4A90D9":"#666",fontSize:11,cursor:"pointer",fontWeight:reminderTimeOpt===opt?700:400}}>{lbs[opt]}</button>;
+                return(
+                  <button key={opt} onClick={()=>setReminderTimeOpt(opt)} style={{padding:"4px 10px",borderRadius:8,border:`1.5px solid ${reminderTimeOpt===opt?"#4A90D9":"#E5E8EE"}`,background:reminderTimeOpt===opt?"#E8F0FE":"#fff",color:reminderTimeOpt===opt?"#4A90D9":"#666",fontSize:11,cursor:"pointer",fontWeight:reminderTimeOpt===opt?700:400}}>{lbs[opt]}</button>
+                );
               })}
             </div>
-            {reminderTimeOpt==="custom"&&<input type="time" value={reminderCustomT} onChange={e=>setReminderCustomT(e.target.value)} style={{height:32,padding:"0 8px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333",marginBottom:5}}/>}
-            <div style={{fontSize:11,color:"#999",marginTop:2}}>将于 <strong style={{color:"#4A90D9"}}>{computeSendTime(reminderTimeOpt,reminderCustomT,reminderEv)}</strong> 自动发送</div>
+            {reminderTimeOpt==="custom"&&(
+              <input type="time" value={reminderCustomT} onChange={e=>setReminderCustomT(e.target.value)} style={{height:32,padding:"0 8px",border:"1px solid #E5E8EE",borderRadius:6,fontSize:13,outline:"none",color:"#333",marginBottom:5}}/>
+            )}
+            <div style={{fontSize:11,color:"#999",marginTop:2}}>
+              将于 <strong style={{color:"#4A90D9"}}>{computeSendTime(reminderTimeOpt,reminderCustomT,reminderEv)}</strong> 自动发送
+            </div>
           </div>
           {!sentReminder?(
             <button onClick={()=>{
@@ -2531,7 +2331,7 @@ return (
       </div>
     )}
 
-    {/* 添加/编辑日程弹窗 */}
+    {/* ── 添加/编辑日程弹窗 ── */}
     {showEvModal&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setShowEvModal(false)}>
         <div style={{background:"#fff",borderRadius:16,padding:"24px",width:400,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
@@ -2564,7 +2364,7 @@ return (
       </div>
     )}
 
-    {/* 导入日程弹窗 */}
+    {/* ── 导入日程弹窗 ── */}
     {showImportModal&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setShowImportModal(false)}>
         <div style={{background:"#fff",borderRadius:16,padding:"24px",width:440,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
@@ -2572,7 +2372,7 @@ return (
           <div style={{fontSize:12,color:"#999",marginBottom:18}}>支持图片识别、文件上传、教务系统直连</div>
           {importStep==="choose"&&(
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              {[{icon:"🖼️",label:"图片识别",desc:"上传课表截图\nAI 识别课程",color:"#4A90D9"},{icon:"📄",label:"PDF/Word",desc:"上传课表文件\n自动解析",color:"#FA8C16"},{icon:"🏫",label:"教务系统",desc:"账号密码登录\n直接同步",color:"#52C41A"},{icon:"📆",label:"iCal日历",desc:"日历同步\n一键导入",color:"#9B59B6"}].map(opt=>(
+              {[{icon:"🖼️",label:"图片识别",desc:"上传课表截图\nAI 识别课程",color:"#4A90D9"},{icon:"📄",label:"PDF / Word",desc:"上传课表文件\n自动解析",color:"#FA8C16"},{icon:"🏫",label:"教务系统",desc:"账号密码登录\n直接同步",color:"#52C41A"},{icon:"📆",label:"iCal日历",desc:"日历同步\n一键导入",color:"#9B59B6"}].map(opt=>(
                 <button key={opt.label} onClick={()=>handleImport(opt.label)} style={{padding:"14px 12px",borderRadius:10,border:`1.5px solid ${opt.color}55`,background:`${opt.color}10`,color:"#333",cursor:"pointer",textAlign:"left"}}>
                   <div style={{fontSize:24,marginBottom:4}}>{opt.icon}</div>
                   <div style={{fontSize:13,fontWeight:700,color:opt.color,marginBottom:3}}>{opt.label}</div>
@@ -2581,25 +2381,48 @@ return (
               ))}
             </div>
           )}
-          {importStep==="loading"&&<div style={{padding:"30px 0",textAlign:"center"}}><div style={{fontSize:32,marginBottom:12}}>⏳</div><div style={{fontSize:14,fontWeight:700,color:"#333",marginBottom:6}}>正在通过{importMethod}导入…</div></div>}
-          {importStep==="done"&&<div style={{padding:"20px 0",textAlign:"center"}}><div style={{fontSize:38,marginBottom:10}}>✅</div><div style={{fontSize:14,fontWeight:700,color:"#52C41A",marginBottom:6}}>导入成功！</div><div style={{fontSize:11.5,color:"#666",marginBottom:18}}>已导入 4 节课程到日程表</div><button onClick={()=>setShowImportModal(false)} style={{padding:"10px 32px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#52C41A,#73D13D)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>查看日程</button></div>}
+          {importStep==="loading"&&(
+            <div style={{padding:"30px 0",textAlign:"center"}}>
+              <div style={{fontSize:32,marginBottom:12}}>⏳</div>
+              <div style={{fontSize:14,fontWeight:700,color:"#333",marginBottom:6}}>正在通过{importMethod}导入…</div>
+              <div style={{fontSize:11,color:"#999"}}>识别课程信息中，请稍候</div>
+            </div>
+          )}
+          {importStep==="done"&&(
+            <div style={{padding:"20px 0",textAlign:"center"}}>
+              <div style={{fontSize:38,marginBottom:10}}>✅</div>
+              <div style={{fontSize:14,fontWeight:700,color:"#52C41A",marginBottom:6}}>导入成功！</div>
+              <div style={{fontSize:11.5,color:"#666",marginBottom:18}}>已通过 {importMethod} 导入 4 节课程到日程表</div>
+              <button onClick={()=>setShowImportModal(false)} style={{padding:"10px 32px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#52C41A,#73D13D)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>查看日程</button>
+            </div>
+          )}
         </div>
       </div>
     )}
 
-    {/* 敏感信息解锁弹窗 */}
+    {/* ── 敏感信息解锁弹窗 ── */}
     {sensitiveCapId!==null&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:4000}} onClick={()=>{setSensitiveCapId(null);setSensitiveInput("");}}>
         <div style={{background:"#fff",borderRadius:16,padding:"26px",width:360,boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}} onClick={e=>e.stopPropagation()}>
           <div style={{fontSize:16,fontWeight:800,color:"#333",marginBottom:6}}>🔐 敏感信息保护</div>
           <div style={{background:"#F5F5F5",border:"1px solid #E5E8EE",borderRadius:8,padding:"8px 10px",marginBottom:12}}>
-            <div style={{fontSize:10.5,color:"#666",lineHeight:1.5}}>🤖 Q仔已对该内容进行本地 AES-256 加密存储。云端仅存储指针，无法还原实际内容。</div>
+            <div style={{fontSize:10.5,color:"#666",lineHeight:1.5}}>
+              🤖 Q仔已对该内容进行本地 AES-256 加密存储。云端仅存储指针，无法还原实际内容。请输入访问密码查看。
+            </div>
           </div>
           <input type="password" value={sensitiveInput} autoFocus onChange={e=>setSensitiveInput(e.target.value)}
-            onKeyDown={e=>{if(e.key!=="Enter")return;if(sensitiveInput==="666"){setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));setSensitiveCapId(null);setSensitiveInput("");showToast("🔓 验证通过，账号密码已显示","#52C41A");}else{showToast("❌ 密码错误","#FF4D4F");}}}
-            placeholder="输入访问密码…" style={{width:"100%",height:42,padding:"0 12px",border:"1.5px solid #E5E8EE",borderRadius:8,fontSize:14,outline:"none",color:"#333",boxSizing:"border-box",marginBottom:16}}/>
+            onKeyDown={e=>{
+              if(e.key!=="Enter")return;
+              if(sensitiveInput==="666"){setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));setSensitiveCapId(null);setSensitiveInput("");showToast("🔓 验证通过，账号密码已显示","#52C41A");}
+              else{showToast("❌ 密码错误","#FF4D4F");}
+            }}
+            placeholder="输入访问密码…"
+            style={{width:"100%",height:42,padding:"0 12px",border:"1.5px solid #E5E8EE",borderRadius:8,fontSize:14,outline:"none",color:"#333",boxSizing:"border-box",marginBottom:16}}/>
           <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>{if(sensitiveInput==="666"){setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));setSensitiveCapId(null);setSensitiveInput("");showToast("🔓 已解锁","#52C41A");}else{showToast("❌ 密码错误","#FF4D4F");}}} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>确认解锁</button>
+            <button onClick={()=>{
+              if(sensitiveInput==="666"){setUnlockedCaps(p=>new Set([...p,sensitiveCapId!]));setSensitiveCapId(null);setSensitiveInput("");showToast("🔓 已解锁","#52C41A");}
+              else{showToast("❌ 密码错误","#FF4D4F");}
+            }} style={{flex:1,padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#4A90D9,#7B68EE)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>确认解锁</button>
             <button onClick={()=>{setSensitiveCapId(null);setSensitiveInput("");}} style={{padding:"10px 16px",borderRadius:10,border:"1px solid #E5E8EE",background:"transparent",color:"#666",fontSize:13,cursor:"pointer"}}>取消</button>
           </div>
           <div style={{fontSize:11,color:"#bbb",textAlign:"center",marginTop:10}}>演示密码：666</div>
@@ -2607,13 +2430,14 @@ return (
       </div>
     )}
 
-    {/* 编辑优先级条目 */}
+    {/* ── 编辑优先级条目弹窗 ── */}
     {editingPItem&&(
       <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:3000}} onClick={()=>setEditingPItem(null)}>
         <div style={{background:"#fff",borderRadius:16,padding:"24px",width:380,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}} onClick={e=>e.stopPropagation()}>
           <div style={{fontSize:15,fontWeight:800,color:"#333",marginBottom:4}}>✏️ 调整优先级</div>
           <div style={{background:"linear-gradient(135deg,#F3E5F5,#E8F0FE)",border:"1px solid #D3B8E0",borderRadius:8,padding:"6px 10px",marginBottom:14,display:"flex",gap:6,alignItems:"center"}}>
-            <span style={{fontSize:14}}>✨</span><span style={{fontSize:10.5,color:"#7B68EE",lineHeight:1.4}}>修改后 Q仔会记录你的偏好，下次遇到同类任务会自动参考</span>
+            <span style={{fontSize:14}}>✨</span>
+            <span style={{fontSize:10.5,color:"#7B68EE",lineHeight:1.4}}>修改后 Q仔会记录你的偏好，下次遇到同类任务会自动参考此调整</span>
           </div>
           <div style={{marginBottom:12}}>
             <div style={{fontSize:12,color:"#666",marginBottom:4}}>事项名称</div>
@@ -2623,13 +2447,17 @@ return (
             <div style={{fontSize:12,color:"#666",marginBottom:8}}>调整优先级</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {[{l:"紧急",e:"🔴",c:"#FF4D4F"},{l:"重要",e:"🟠",c:"#FA8C16"},{l:"一般",e:"🟡",c:"#FAAD14"},{l:"已确认",e:"🟢",c:"#52C41A"},{l:"方案参考",e:"🔵",c:"#3B82F6"}].map(opt=>(
-                <button key={opt.l} onClick={()=>setEditingPItem(p=>p?{...p,level:opt.l}:null)} style={{padding:"6px 12px",borderRadius:10,border:`2px solid ${editingPItem.level===opt.l?opt.c:"#E5E8EE"}`,background:editingPItem.level===opt.l?`${opt.c}15`:"#fff",color:editingPItem.level===opt.l?opt.c:"#666",fontSize:12,fontWeight:editingPItem.level===opt.l?700:400,cursor:"pointer"}}>{opt.e} {opt.l}</button>
+                <button key={opt.l} onClick={()=>setEditingPItem(p=>p?{...p,level:opt.l}:null)}
+                  style={{padding:"6px 12px",borderRadius:10,border:`2px solid ${editingPItem.level===opt.l?opt.c:"#E5E8EE"}`,background:editingPItem.level===opt.l?`${opt.c}15`:"#fff",color:editingPItem.level===opt.l?opt.c:"#666",fontSize:12,fontWeight:editingPItem.level===opt.l?700:400,cursor:"pointer"}}>
+                  {opt.e} {opt.l}
+                </button>
               ))}
             </div>
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>{
               if(!editingPItem)return;
+              const colorMap2:Record<string,string>={紧急:"#FF4D4F",重要:"#FA8C16",一般:"#FAAD14",方案参考:"#3B82F6",已确认:"#52C41A",敏感:"#8C8C8C"};
               const origOverride=priorityOverrides[editingPItem.id];
               if(origOverride!==editingPItem.level){
                 const now=new Date().toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
@@ -2645,6 +2473,7 @@ return (
       </div>
     )}
 
+    {/* ── 全局样式 ── */}
     <style>{`
       ::-webkit-scrollbar { width: 5px; }
       ::-webkit-scrollbar-track { background: transparent; }
@@ -2655,5 +2484,4 @@ return (
   </div>
 );
 }
-
 
